@@ -1,0 +1,355 @@
+---
+title: "Traffic Model"
+author: ""
+date: "9/24/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE) #`echo = FALSE` hides code but not output
+```
+
+```{r model setup, include=FALSE}
+rm(list = ls())   #clears objects from workspace
+gc()              #garbage collection
+library("deSolve")
+```
+
+# Model
+```{r model}
+###### Model with distance #####
+dist.model2 <- function(t, x, params){
+  alpha <- params[1]      # alpha: per capita rate of spont. discoveries
+  QA <- params[2]         # q_i: quality of source i
+  QB <- params[3]             # A,B,C,D,E are indices for which food source/trail
+  QC <- params[4]
+  QD <- params[5]
+  QE <- params[6]
+  N <- params[7]          # N: number of ants
+  s <- params[8]          # s: per capita rate of ant leaving trail per distance
+  gamma1 <- params[9]     # gamma_1: range of foraging scouts
+  gamma2 <- params[10]    # gamma_2: range of recruitment activity
+  gamma3 <- params[11]    # gamma_3: range of influence of pheromone
+  dA <- params[12]        # d_i: dist btwn nest and food source i 
+  dB <- params[13]             # A,B,C,D,E are indices for which food source/trail
+  dC <- params[14]
+  dD <- params[15]
+  dE <- params[16]
+  K <- params[17]         # K: inertia effects that may affect pheromones
+  eta1 <- params[18]      # eta: ? (see fletcher's agenda)
+  eta2 <- params[19]      # eta prime: ? (see fletcher's agenda)
+  
+  betaA <- eta1 * QA      # beta_i: ? (see fletcher's agenda)
+  betaB <- eta1 * QB            # A,B,C,D,E are indices for which food source/trail
+  betaC <- eta1 * QC
+  betaD <- eta1 * QD
+  betaE <- eta1 * QE
+  
+  betapA <- eta2 * QA      # beta_i prime: ? (see fletcher's agenda)
+  betapB <- eta2 * QB            # A,B,C,D,E are indices for which food source/trail
+  betapC <- eta2 * QC
+  betapD <- eta2 * QD
+  betapE <- eta2 * QE
+  
+  # below makes a list of the dX_i / dt values for each of the J=5 food sources (eqn 2 of paper)
+  # Why is J=5?
+	xp <- rep(NA, 5)
+	xp[1] <- (alpha * exp(-gamma1 * dA) + gamma2 * betaA * x[1] / dA) * (N - x[1] - x[2] - x[3] - x[4] - x[5]) - (s * dA * x[1]) / (K + gamma3 * betapA * x[1] / dA)
+	xp[2] <- (alpha * exp(-gamma1 * dB) + gamma2 * betaB * x[2] / dB) * (N - x[1] - x[2] - x[3] - x[4] - x[5]) - (s * dB * x[2]) / (K + gamma3 * betapB * x[2] / dB)
+  xp[3] <- (alpha * exp(-gamma1 * dC) + gamma2 * betaC * x[3] / dC) * (N - x[1] - x[2] - x[3] - x[4] - x[5]) - (s * dC * x[3]) / (K + gamma3 * betapC * x[3] / dC)
+  xp[4] <- (alpha * exp(-gamma1 * dD) + gamma2 * betaD * x[4] / dD) * (N - x[1] - x[2] - x[3] - x[4] - x[5]) - (s * dD * x[4]) / (K + gamma3 * betapD * x[4] / dD)
+  xp[5] <- (alpha * exp(-gamma1 * dE) + gamma2 * betaE * x[5] / dE) * (N - x[1] - x[2] - x[3] - x[4] - x[5]) - (s * dE * x[5]) / (K + gamma3 * betapE * x[5] / dE)
+	return(list(xp))
+}
+```
+
+## Parameters
+```{r parameters}
+# number of ants
+n <- 10000
+
+#number of food sources
+J <- 5
+
+## parameters
+#      alpha, QA, QB, QC, QD, QE, N, s,   gamma1, gamma2, gamma3, dA, dB, dC, dD, dE, K, eta1, eta2
+p <- c(0.75,  rep(0.10, 5),       n, 3.5, 0.2,    .021,   .021,   rep(5, 5),          1, 20,   20)
+# rep is ensuring the parameters for each source/trail start the same
+
+# 9-21-20: Do not know what boot is supposed to be
+boot <- 500#0000
+
+# initializing various blank lists 
+selected.dist <- rep(NA, boot)
+selected.Q <- rep(NA, boot)
+selected.n <- matrix(NA, nrow = boot, ncol = J)
+conv.time <- rep(NA, boot)
+non.com.ants <- rep(NA, boot)
+rank.D.selected <- rep(NA, boot)
+
+## parameters of the input distributions
+min.quali.dist <- 0 # min of quality distribution
+max.quali.dist <- 20
+av.quali.dist <- (min.quali.dist + max.quali.dist) / 2
+min.D.dist <- 0 # min of distance distribution
+max.D.dist <- 55
+
+ts <- 0.01 # timestep
+tmax <- 50 # max time
+t <- seq(from = 0, to = tmax, by = ts) #list of times 0 to tmax that are 1 ts apart from eachother
+step.max <- length(t) # number of total timesteps
+ini.cond <- rep(0, J) 
+conv.crit <- 0.000001 # convergence criteria
+```
+
+# Running the model
+```{r run}
+start.time <- Sys.time()
+for (iboot in 1:boot){
+	p[2:6] <-  runif(J, min = min.quali.dist, max = max.quali.dist )  # pick J qualities from uniform distribution
+	p[12:16] <- runif(J, min = min.D.dist, max = max.D.dist)          # pick J distances from uniform distribution
+	res.dist <- lsoda(ini.cond, t, dist.model2, p) # run the model (lsoda is fortran ODE solver)
+#res.dist is a table with rows for each timestep and 6 cols
+	#1st col is time, 2-6 are trails 1-5
+	#values represent number of ants on each trail
+	traf.end <- res.dist[step.max, 2:6] # number of ants on each trail at the end (2:6 is just the columns of J trails: col 1 is time)
+	comm.ants <- sum(traf.end) # number of total commited ants (ants on trails) in the colony
+	selected.dist[iboot] <-	sum(p[12:16] * traf.end / n) # like a weighted avg of distance: (sum of (distance* proportion of ants on that trail) over all J=5 trails)
+	selected.Q[iboot] <- sum(p[2:6] *  traf.end / n) # like avg of qualities, weighted by # ants on those trails
+	selected.n[iboot, ] <- sort(traf.end / comm.ants, decreasing = TRUE)	# sorting the fraction of ants in each trail
+	# number of rows = trial
+	# the percentage of the total ants that end up on each trail each trial (aka each boot)
+	non.com.ants[iboot] <- n - comm.ants # numbber of non-committed ants
+	rank.D.selected[iboot] <- which(sort(p[12:16], index.return = T)$ix == which.max(traf.end))
+	# which.max(traf.end) is index of the trail with most ants at the end of the trial
+	#puts "true" where the the trail with the most ants was in the distance (shortest to longest) lineup
+	# so T FFFF says the shortest trail had the most ants on it
+	# FFFFT means trail with most ants (at the end of the run, for that particular trial) was the longest
+	# rank.D.selected is the rank/place of the trail with the most ants on it
+	# the rank.D.selected = 2 means the second shortest trail was the one that had the most ants on it
+
+	#this is used in the "is it geometric?" section
+	
+	diff.mat <- apply(res.dist[, 2:6], 2, diff)
+	# applying array = the # ants on each trail at the timestep, margin = columns, function = diff
+	# diff "calculates the differences between all consecutive values of a vector"
+	if (sum(diff.mat[step.max-1,] < conv.crit) == J){ # if the condition is true for all of the J paths
+	  conv.time[iboot] <- res.dist[max(apply(diff.mat < conv.crit, 2, which.max)), 1]
+	  # this gives the time for which the last of the columns has converged
+	  # the inner thing is finding a vector of 5 trail columns containg the timestep they converged
+	} else {
+		conv.time[iboot] <- tmax
+		#if it doesn't converge during the run, use the max/last timestep run as the conv time
+	}
+}
+```
+
+## Save info
+```{r save}
+# print how long it took the model to be run boot # of times
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken
+
+df.save <- cbind(selected.dist, selected.Q, selected.n, conv.time, non.com.ants, rank.D.selected)
+save(df.save, file = "save_simu500000.rda")
+
+# load("save_simu500000.rda")
+# selected.dist <- df.save[,1]
+# selected.Q <- df.save[, 2]
+# selected.n <- df.save[, 3:7]
+# conv.time <- df.save[, 8]
+# non.com.ants <- df.save[, 9]
+# rank.D.selected <- df.save[, 10]
+```
+
+## ???
+```{r ???}
+
+boot.theo <- 500#0000 #? what is this? for boot = 500000 this is 50000 (boot/10) but idk if that's a typo
+min.dist <- rep(NA, boot)
+max.Q <- rep(NA, boot)
+
+for (iboot in 1:boot.theo){
+	cur.Q <-  runif(5, min = min.quali.dist, max = max.quali.dist )
+	cur.dist <- runif(5, min = min.D.dist, max = max.D.dist)
+	
+	min.dist[iboot] <-	min(cur.dist)
+	max.Q[iboot] <- max(cur.Q)
+}
+
+#is there a collective decision?
+col.deci <- non.com.ants < n - 0.01 * n
+#t/f output: says t if less than 99% of colony
+```
+
+# Plots
+```{r dist & density plot}
+##### Make plots #####
+
+breaks.normdist <- seq(0, max.D.dist+2, 2)
+#max.D.dist is what we set the maximum of the distance distribution to be
+h.dmin <- hist(min.dist, breaks = breaks.normdist, plot = F)
+#quartz(w = 3.5, h = 3.5)
+par(mar = c(2.75, 2.75, .4, .4), mgp = c(1.5, .3, 0), las = 1) 
+
+hist(selected.dist[col.deci], breaks = breaks.normdist, freq = FALSE,
+	xlab = "Av. distance to food sources (m)", ylab = expression(paste(10^-2, " Density", sep = "")), main = "", 
+	yaxt = "n", xaxt = "n", ylim = c(0, .1), xlim = c(min.D.dist, max.D.dist))
+
+points(dunif(seq(min.D.dist, max.D.dist, .01), min = min.D.dist, max = max.D.dist) ~ seq(min.D.dist, max.D.dist, .01), type = "l")
+
+points(dexp(seq(0, max.D.dist, 0.01), rate = 1/11.9)~seq(0, max.D.dist, 0.01), type = "l", col = "red")
+
+axis(2, at = seq(from = 0, to = 0.1, by = 0.01), labels = seq(from = 0, to = 0.1, by = 0.01)*100, tcl = .25)
+axis(2, at = seq(from = 0, to = 0.1, by = 0.005), labels = NA, tcl = .15)
+axis(1, at = seq(from = 0, to = max.D.dist, by = 10), labels = seq(from = 0, to = max.D.dist, by = 10), tcl = .25)
+axis(1, at = seq(from = 0, to = max.D.dist, by = 5), labels = NA, tcl = .15)
+
+legend("topright", legend = rev(c("Input distribution", "Exponential fit")), lty = c("solid", "solid"), bty = "n", col = c("red", "black"), cex = .75)
+mtext("a", side = 3, adj = -.15, line = -1, font = 2)
+dev.copy2pdf(file = "figures-traffic_histdist.pdf")
+dev.off()
+```
+
+```{r quality and density plot}
+#quartz(w = 3.5, h = 3.5)
+
+par(mar = c(2.75, 2.75, .4, .4), mgp = c(1.5, .3, 0), las = 1) 
+
+h.maxQ <- hist(max.Q, plot = F, breaks = seq(min.quali.dist, max.quali.dist, 1))
+
+h.q <- hist(selected.Q[col.deci], freq = F, breaks = seq(min.quali.dist, max.quali.dist, 1), xlim = c(floor(min(selected.Q[col.deci])), ceiling(max(selected.Q[col.deci]))),
+	    main = "", xaxt = "n", yaxt = "n", xlab = "Average quality of food source", ylab = expression(paste(10^-2, " Density", sep = "")), ylim = c(0, 0.1))
+
+points(dunif(seq(min.quali.dist, max.quali.dist, .01), min = min.quali.dist, max = max.quali.dist) ~ seq(min.quali.dist, max.quali.dist, .01), type = "l")
+
+axis(2, at = seq(from = 0, to = 0.1, by = .01), labels =  seq(from = 0, to = 0.1, by = .01)*100, tcl = .25)
+axis(2, at = seq(from = 0, to = 0.1, by = 0.005), labels = NA, tcl = .15)
+axis(1, at = seq(from = min.quali.dist, to = max.quali.dist, by = 5), labels = seq(from = min.quali.dist, to = max.quali.dist, by = 5), tcl = .25)
+
+axis(1, at = seq(from = min.quali.dist, to = max.quali.dist, by = 1), labels = NA, tcl = .15)
+
+legend("topleft", legend = rev(c("Input distribution")), lty = c("solid"), col = c("black"), bty = "n", cex = .75)
+
+mtext("b", side = 3, adj = -.15, line = -1, font = 2)
+
+dev.copy2pdf(file = "figures-traffic_histquali.pdf")
+dev.off()
+```
+
+## Convergence time
+```{r convtime plot}
+## Convergence time
+quartz(w = 3.5, h = 3.5)
+par(mar = c(2.75, 2.75, .4, .4), mgp = c(1.5, .3, 0), las = 1) 
+hist(conv.time, breaks = seq(from = 0, to = tmax, by = 1), main = "", 
+	xlab = "Time to converge (days)", ylab = expression(paste(10^-2, " Density", sep = "")),
+	xaxt = "n", yaxt = "n",	freq = FALSE)
+axis(2, at = seq(from = 0, to = 1, by = .01), labels =  seq(from = 0, to = 1, by = .01)*100, tcl = .25)
+axis(2, at = seq(from = 0, to = 1, by = 0.005), labels = NA, tcl = .15)
+axis(1, at = seq(from = 0, to = tmax, by = 50), labels = seq(from = 0, to = tmax, by = 50), tcl = .25)
+axis(1, at = seq(from = 0, to = tmax, by = 10), labels = NA, tcl = .15)
+dev.copy2pdf(file = "figures-traffic_histconvtime.pdf")
+dev.off()
+```
+
+## Uncommitted ants
+```{r uncommitted plot}
+## Uncommitted ants
+quartz(w = 3.5, h = 3.5)
+par(mar = c(2.75, 2.75, .4, .4), mgp = c(1.5, .3, 0), las = 1) 
+hist(non.com.ants, breaks = seq(from = 0, to = n, by = 50), main = "", 
+	xlab = "Uncommitted ants", ylab = expression(paste(10^-2, " Density", sep = "")),
+	xaxt = "n", yaxt = "n",	freq = FALSE, )
+axis(2, at = seq(from = 0, to = 1, by = .01), labels =  seq(from = 0, to = 1, by = .01)*100, tcl = .25)
+axis(2, at = seq(from = 0, to = 1, by = 0.005), labels = NA, tcl = .15)
+axis(1, at = seq(from = 0, to = n, by = 1000), labels = seq(from = 0, to = n, by = 1000), tcl = .25)
+axis(1, at = seq(from = 0, to = n, by = 100), labels = NA, tcl = .15)
+dev.copy2pdf(file = "figures-traffic_histcnoncomants.pdf")
+dev.off()
+```
+
+## Quality ~ Distance plots
+```{r qd plots}
+## quality ~ distance
+dist.breaks <- seq(min.D.dist, max.D.dist, by = 7.5)
+dist.midpoints <- (dist.breaks[2:length(dist.breaks)] + dist.breaks[1:(length(dist.breaks) - 1)]) / 2
+dist.classes <- cut(selected.dist[col.deci], breaks = dist.breaks, labels = F)
+q.mean.agg <- aggregate(selected.Q[col.deci] / av.quali.dist, by = list(dist.classes), mean)
+q.sd.agg <- aggregate(selected.Q[col.deci] / av.quali.dist, by = list(dist.classes), sd)
+
+q.mean.dist <- rep(NA, length(dist.midpoints))
+q.sd.dist <- rep(NA, length(dist.midpoints))
+q.mean.dist[q.mean.agg$Group.1] <- q.mean.agg$x
+q.sd.dist[q.sd.agg$Group.1] <- q.sd.agg$x
+n.points.classes <- rep(0, length(dist.midpoints))
+table.dist.classes <- table(dist.classes)
+n.points.classes[as.numeric(names(table.dist.classes))] <- table.dist.classes
+q.se <- q.sd.dist / sqrt(n.points.classes)
+
+quartz(w = 3.5, h = 3.5)
+par(mar = c(2.75, 2.75, .4, .4), mgp = c(1.5, .3, 0), las = 1) 
+plot(q.mean.dist ~ dist.midpoints, ylim = c(1, max.quali.dist/av.quali.dist), xlim = c(min.D.dist, max.D.dist), xaxt = "n", yaxt = "n", 
+	xlab = "Av. distance to food sources (m)", ylab = "Normalised av. quality of food source", cex.lab = 0.8, pch = 16)
+segments(x0 = dist.midpoints, y0 = q.mean.dist - q.se, y1 = q.mean.dist + q.se)
+m.fit <- lm(tail(q.mean.dist, n = 8) ~ tail(dist.midpoints, n = 8))
+x.seq <- seq(from = min.D.dist, to = max.D.dist, by = .01)
+y.f <- x.seq*m.fit$coefficients[2] +m.fit$coefficients[1]
+points(y.f ~ x.seq, type = "l")
+
+axis(2, at = seq(from = 1, to = 2, by = .1), labels =  seq(from = 1, to = 2, by = .1), tcl = .25)
+axis(2, at = seq(from = 1, to = 2, by = 0.05), labels = NA, tcl = .15)
+axis(1, at = seq(from = min.D.dist, to = max.D.dist, by = 5), labels = seq(from = min.D.dist, to = max.D.dist, by = 5), tcl = .25)
+axis(1, at = seq(from = min.D.dist, to = max.D.dist, by = 1), labels = NA, tcl = .15)
+legend("topright", legend = "linear model", lty = "solid", col = "black", bty = "n", cex = .75)
+mtext("c", side = 3, adj = -.15, line = -1, font = 2)
+dev.copy2pdf(file = "figures-traffic_quali_dist.pdf")
+dev.off()
+
+quartz(w = 3.5, h = 3.5)
+par(mar = c(2.75, 2.75, .4, .4), mgp = c(1.5, .3, 0), las = 1) 
+plot(selected.dist[col.deci], selected.Q[col.deci]/av.quali.dist,	xlab = "Av. distance to food sources (m)", 
+	ylab = "Normalised av. quality of food source", cex.lab = 0.8, pch = 16, cex = .5,
+	
+	col = rgb(red = 97/255, green = 151/255, blue = 230/255, alpha = 0.25), xlim = c(min.D.dist, max.D.dist), 
+	xaxt = "n", yaxt = "n", ylim = c(min.quali.dist/av.quali.dist, max.quali.dist/av.quali.dist))
+points(q.mean.dist ~ dist.midpoints, pch = 16)
+segments(x0 = dist.midpoints, y0 = q.mean.dist - q.se, y1 = q.mean.dist + q.se)
+axis(2, at = seq(from = 0, to = 2, by = .2), labels =  seq(from = 0, to = 2, by = .2), tcl = .25)
+axis(1, at = seq(from = 0, to = max.D.dist, by = 10), labels = seq(from = 0, to = max.D.dist, by = 10), tcl = .25)
+axis(1, at = seq(from = 0, to = max.D.dist, by = 5), labels = NA, tcl = .15)
+
+mtext("c", side = 3, adj = -.15, line = -1, font = 2)
+dev.copy2pdf(file = "figures-traffic_quali_dist_all.pdf")
+dev.off()
+system("convert -density 600x600 -quality 90 figures-traffic_quali_dist_all.pdf figures-traffic_quali_dist_all.png")
+
+av.props <- apply(selected.n[col.deci, ], 2, mean)
+sd.props <- apply(selected.n[col.deci, ], 2, sd)
+quartz(w = 3.5, h = 3.5)
+par(mar = c(2.75, 2.75, .4, .4), mgp = c(1.5, .3, 0), las = 1) 
+b <- barplot(av.props, ylim = c(0, 1 + max(sd.props)), names.arg =  paste(1:5, sep = ""), 
+	border = "white", yaxt = "n", ylab = "Proportion of foraging workers", xlab = "Trails sorted by descending traffic")
+segments(x0 = b, x1 = b, y0 = av.props, y1 = av.props + sd.props)
+axis(2, at = seq(from = 0, to = 1, by = .1), labels =  seq(from = 0, to = 1, by = .1), tcl = .25)
+axis(2, at = seq(from = 0, to = 1, by = 0.05), labels = NA, tcl = .15)
+mtext("D", side = 3, adj = -.15, line = -1, font = 2)
+dev.copy2pdf(file = "figures-traffic_selectedtrails.pdf")
+dev.off()
+```
+
+## Is it geometric?
+```{r geoplot}
+## is geometric? ##
+quartz(w = 3.5, h = 3.5)
+par(mar = c(2.75, 2.75, .4, .4), mgp = c(1.5, .3, 0), las = 1, tcl = .25) 
+b <- barplot(table(rank.D.selected)/boot, ylim = c(0, 1), 
+	xlab = "Rank of distance of the selected source", col = "white",
+	ylab = "Relative frequency", cex.lab = 1)
+p <- length(rank.D.selected) / sum(rank.D.selected)
+points(p*(1 - p)**(1:5-1) ~ b, pch = 16, type = "b")
+legend("topright",pch = 16, col = "black", legend = "geometric distribution", bty = "n")
+dev.copy2pdf(file = "figures-traffic_geometric.pdf")
+dev.off()
+```
