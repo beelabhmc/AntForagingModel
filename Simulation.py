@@ -9,7 +9,7 @@ import numpy as np
 #   solve_ivp (also from scipy.integrate) is allegedly more flexible than odeint, but slower
 #       doc: https://docs.scipy.org/doc/scipy-1.2.1/reference/generated/scipy.integrate.solve_ivp.html
 #   desolver? mostly for IVPs
-#   GEKKO?
+#   GEKKO? 
 
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
