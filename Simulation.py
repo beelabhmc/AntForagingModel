@@ -56,29 +56,33 @@ def dx_dt(x,t):
 
 # RUNS AND MODEL OUTPUT
 
+density      = np.zeros([runs,J])
 final_time   = np.zeros([runs,J])
 weight_avg_Q = np.zeros(runs)
 weight_avg_D = np.zeros(runs)
+prop_committed_ants    = np.zeros(len(tspan))   # Proportion of committed ants 
+prop_noncommitted_ants = np.zeros(len(tspan))   # Proportion of non committed ants 
 for w in range(runs):
     Q = np.random.uniform(Qmin,Qmax,J)      # Choose each trail's quality from uniform distrib   [10]   
     D = np.random.uniform(Dmin,Dmax,J)      # Choose each trail's distance from uniform distrib  [0.55] 
+    print('Q: ',Q)
+    print('D: ',D)
     for i in range(J):
         betaB[i] = Q[i] * n1                # Each trail has different betas, so they're calculated here
         betaS[i] = Q[i] * n2
     xs = odeint(dx_dt, x0, tspan)           # Solve the system, Columns: trail (food source), Rows: time step
-    final_time[w,:] = xs[-1,:]              # 2D array of the number of ants on each trail at the last timestep
-    #                                         Columns: trail (food source), Rows: runs
-    prop_committed_ants    = np.zeros(len(tspan))   # Proportion of committed ants 
-    prop_noncommitted_ants = np.zeros(len(tspan))   # Proportion of non committed ants 
+    final_time[w,:] = xs[-1,:]              # 2D array of the number of ants on each trail at the last timestep. Columns: trail (food source), Rows: runs.
+    
+    for i in range(J):
+        density[w,i] = xs[-1,i]/D[i]                         
+    weight_avg_Q[w]  = sum((final_time[w,:] * Q)/N)  # Weighted average of quality (selected.Q in R)
+    weight_avg_D[w]  = sum((final_time[w,:] * D)/N)  # Weighted average of distance (selected.D in R)
+    
     for t in range(len(tspan)):
-        prop_committed_ants[t]    = sum(xs[t,:])/N
+        prop_committed_ants[t]    = sum(xs[t,:]/N)
         prop_noncommitted_ants[t] = 1 - prop_committed_ants[t]
     
-    weight_avg_Q[w] = sum((final_time[w,:] * Q)/N)  # Weighted average of quality (selected.Q in R)
-    weight_avg_D[w] = sum((final_time[w,:] * D)/N)  # Weighted average of distance (selected.D in R)
 
-#print(weight_avg_Q)
-#print(final_time)
 
 #=================================================================================================#
 
