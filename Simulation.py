@@ -41,6 +41,10 @@ tspan = np.arange(start, stop+step, step)
 
 x0 = np.zeros(J)         # We start with no ants on any of the trails
 
+# LIST (for exporting)
+
+all_params_names  =   ["runs", "J", "N", "alpha", "s", "gamma1", "gamma2", "gamma3", "K", "n1", "n2", "Qmin", "Qmax", "Dmin", "Dmax", "start", "stop", "step", "tspan", "x0"]
+all_params_vals   =   [runs, J, N, alpha, s, gamma1, gamma2, gamma3, K, n1, n2, Qmin, Qmax, Dmin, Dmax, start, stop, step, tspan, x0]
 #=================================================================================================#
 
 # SYSTEM OF EQUATIONS
@@ -100,8 +104,8 @@ for p in range(len(param)):                     # for each value of param...
 
 Q_bins = np.arange(Qmin,Qmax+0.5,0.5)                           # note that the step needs to be added to Qmax
 Q_hist,Q_edges = np.histogram(weight_avg_Q, bins = Q_bins)
-#print('Q_hist: ',Q_hist)
-#print('Q_edges: ',Q_edges)
+print('Q_hist: ',Q_hist)
+print('Q_edges: ',Q_edges)
 
 Q_distr = np.zeros(len(Q_bins))     # Q distribution
 Q_distr = Q_hist/(runs) 
@@ -117,12 +121,22 @@ D_distr = D_hist/(runs)
 
 #=================================================================================================#
 
-# CREATING CSV
+# CREATING CSVs
+
+# Create dataframe
+paramd = {'Param': all_params_names, 'Value': all_params_vals}
+paramdf = pd.DataFrame(data=paramd)
+print(paramdf)
+
+# Export
+paramdf.to_csv(r'/Users/nfn/Desktop/Ants/params_nov2.csv', index = False) # Fletcher's path
+#paramdf.to_csv( INSERT PATH , index = False)                                # Miguel's path
+
 
 # Create dataframe
 d = {'Param Values': param_values, 'WeightedQ': weight_avg_Q_tot,'WeightedD': weight_avg_D_tot}
 df = pd.DataFrame(data=d)
-print(df)
+#print(df)
 
 # Export
 df.to_csv(r'/Users/nfn/Desktop/Ants/gamma1_df_nov2.csv', index = False) # Fletcher's path
