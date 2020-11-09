@@ -1,0 +1,53 @@
+---
+title: "simulation-pydata"
+author: "fletcher & miguel"
+date: "11/5/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(dplyr)
+```
+
+```{r read csvs}
+# Make sure that the CSVs have been saved to the same location as this RMD
+param_df <- read.csv("params_nov2.csv")
+wavg_df <- read.csv("gamma1_df_nov2.csv")   #import weighted average df
+
+#param_df <- mutate(param_df, List = c(Param, Value))
+
+head(wavg_df)
+#View(param_df)
+```
+
+``` {r initialize params, eval = FALSE}
+# I tried really hard to make this vectorized, but it didn't work out -fl
+
+assign_param_vals <- function(df) {
+  
+  for (i in (1:length(df[,1]))) {
+    #do.call("<-", list(df[i,]))
+  }
+
+}
+
+assign_param_vals(param_df)
+
+```
+
+```{r histogram}
+require(gridExtra)
+
+wQprob_hist <- ggplot(data = wavg_df) +
+  geom_density(mapping = aes(x = WeightedQ, y = ..scaled..), binwidth = 1)+ facet_grid(rows = vars(Param.Values))
+
+wDprob_hist <- ggplot(data = wavg_df) +
+  geom_density(mapping = aes(x = WeightedD, y =..scaled..), binwidth = .01)+ facet_grid(rows = vars(Param.Values))
+
+#To
+
+grid.arrange(wQprob_hist, wDprob_hist, ncol=2)
+
+```
