@@ -8,17 +8,18 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
-library(dplyr)
 ```
 
 ```{r read csvs}
 # Make sure that the CSVs have been saved to the same location as this RMD
-param_df <- read.csv("params_nov2.csv")
+param_df <- read.csv("params_gamma2.csv")
+val_readout <- c(rbind(param_df$Param, param_df$Value))
+
 wavg_df <- read.csv("gamma1_df_nov2.csv")   #import weighted average df
 
 #param_df <- mutate(param_df, List = c(Param, Value))
 
-head(wavg_df)
+#head(param_df)
 #View(param_df)
 ```
 
@@ -40,14 +41,34 @@ assign_param_vals(param_df)
 ```{r histogram}
 require(gridExtra)
 
+# capt0 <- paste(val_readout, collapse = ' ')
+# capt1 <- substr(capt0, start=1, stop=(nchar(capt0))/2)
+# capt2 <- substr(capt0, start=1+(nchar(capt0))/2, stop=nchar(capt0))
+capt0 <- paste(val_readout[0:10], collapse = ' ')
+capt1 <- paste(val_readout[11:20], collapse = ' ')
+capt2 <- paste(val_readout[21:30], collapse = ' ')
+capt3 <- paste(val_readout[31:40], collapse = ' ')
+capt4 <- paste(capt0, "\n", capt1, "\n", capt2, "\n", capt3)
+
 wQprob_hist <- ggplot(data = wavg_df) +
-  geom_density(mapping = aes(x = WeightedQ, y = ..scaled..), binwidth = 1)+ facet_grid(rows = vars(Param.Values))
+  geom_histogram(mapping = aes(x = WeightedQ, y = ..density..), binwidth = 1)+ facet_grid(rows = vars(Param.Values))+labs (title = "gamma1")+
+    theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
 wDprob_hist <- ggplot(data = wavg_df) +
-  geom_density(mapping = aes(x = WeightedD, y =..scaled..), binwidth = .01)+ facet_grid(rows = vars(Param.Values))
+  geom_histogram(mapping = aes(x = WeightedD, y = ..density..), binwidth = .01)+ facet_grid(rows = vars(Param.Values)) +labs (title = "gamma1")+
+    theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
-#To
+#Also tried using geom_density with y = ..scaled..
 
-grid.arrange(wQprob_hist, wDprob_hist, ncol=2)
+grid.arrange(wQprob_hist, wDprob_hist, ncol=2)#, bottom = capt4)
+
+
+wavg_paramvals <- wavg_df %>% group_by(Param.Values) %>% summarise(val=dplyr::first(Param.Values))
+
+wQ_box<- ggplot(wavg_df, aes(x= as.factor(Param.Values), y=WeightedQ)) + geom_boxplot(fill="slateblue", alpha=0.2) + xlab ("Gamma1 values")
+
+wD_box<- ggplot(wavg_df, aes(x= as.factor(Param.Values), y=WeightedD)) + geom_boxplot(fill="slateblue", alpha=0.2)+ xlab ("Gamma1 values")
+
+grid.arrange(wQ_box, wD_box, ncol=2)
 
 ```
