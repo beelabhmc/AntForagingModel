@@ -8,47 +8,39 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(ggplot2)
 ```
 
 ```{r read csvs}
 # Make sure that the CSVs have been saved to the same location as this RMD
-param_df <- read.csv("params_gamma2.csv")
+# Otherwise, update the read.csv to include your path
+
+# IMPORT PARAMETER CSV
+param_df <- read.csv("params_nov2.csv")
 val_readout <- c(rbind(param_df$Param, param_df$Value))
 
-wavg_df <- read.csv("gamma1_df_nov2.csv")   #import weighted average df
-
+# IMPORT WEIGHTED AVERAGES DF
+wavg_df <- read.csv("gamma23_df_nov16.csv")
 #param_df <- mutate(param_df, List = c(Param, Value))
 
 #head(param_df)
 #View(param_df)
 ```
 
-``` {r initialize params, eval = FALSE}
-# I tried really hard to make this vectorized, but it didn't work out -fl
+## Sweeping One Parameter
 
-assign_param_vals <- function(df) {
-  
-  for (i in (1:length(df[,1]))) {
-    #do.call("<-", list(df[i,]))
-  }
-
-}
-
-assign_param_vals(param_df)
-
-```
-
-```{r histogram}
+```{r histogram ONE param}
 require(gridExtra)
 
+# An attempt to caption the graphs with their parameter set
 # capt0 <- paste(val_readout, collapse = ' ')
 # capt1 <- substr(capt0, start=1, stop=(nchar(capt0))/2)
 # capt2 <- substr(capt0, start=1+(nchar(capt0))/2, stop=nchar(capt0))
-capt0 <- paste(val_readout[0:10], collapse = ' ')
-capt1 <- paste(val_readout[11:20], collapse = ' ')
-capt2 <- paste(val_readout[21:30], collapse = ' ')
-capt3 <- paste(val_readout[31:40], collapse = ' ')
-capt4 <- paste(capt0, "\n", capt1, "\n", capt2, "\n", capt3)
+# capt0 <- paste(val_readout[0:10], collapse = ' ')
+# capt1 <- paste(val_readout[11:20], collapse = ' ')
+# capt2 <- paste(val_readout[21:30], collapse = ' ')
+# capt3 <- paste(val_readout[31:40], collapse = ' ')
+# capt4 <- paste(capt0, "\n", capt1, "\n", capt2, "\n", capt3)
 
 wQprob_hist <- ggplot(data = wavg_df) +
   geom_histogram(mapping = aes(x = WeightedQ, y = ..density..), binwidth = 1)+ facet_grid(rows = vars(Param.Values))+labs (title = "gamma1")+
@@ -58,12 +50,9 @@ wDprob_hist <- ggplot(data = wavg_df) +
   geom_histogram(mapping = aes(x = WeightedD, y = ..density..), binwidth = .01)+ facet_grid(rows = vars(Param.Values)) +labs (title = "gamma1")+
     theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
-#Also tried using geom_density with y = ..scaled..
+#Another option: y = ..scaled.. (Scales to highest value is 1)
 
 grid.arrange(wQprob_hist, wDprob_hist, ncol=2)#, bottom = capt4)
-
-
-wavg_paramvals <- wavg_df %>% group_by(Param.Values) %>% summarise(val=dplyr::first(Param.Values))
 
 wQ_box<- ggplot(wavg_df, aes(x= as.factor(Param.Values), y=WeightedQ)) + geom_boxplot(fill="slateblue", alpha=0.2) + xlab ("Gamma1 values")
 
@@ -71,4 +60,75 @@ wD_box<- ggplot(wavg_df, aes(x= as.factor(Param.Values), y=WeightedD)) + geom_bo
 
 grid.arrange(wQ_box, wD_box, ncol=2)
 
+```
+
+## Sweeping Two Parameters
+
+```{r heatmap TWO params, fig.height = 2.5, fig.width = 6}
+
+# 
+wavg_means <- wavg_df %>% group_by(Param1.Values, Param2.Values) %>%
+  summarize(WeightedQ = mean(WeightedQ),
+            WeightedD = mean(WeightedD))
+
+#View(wavg_means)
+
+wQ_heat <- ggplot(wavg_means, aes(Param1.Values, Param2.Values, fill= WeightedQ)) + 
+  geom_tile()
+
+wD_heat <- ggplot(wavg_means, aes(Param1.Values, Param2.Values, fill= WeightedD)) + 
+  geom_tile()
+
+require(gridExtra)
+grid.arrange(wQ_heat, wD_heat, ncol=2)
+```
+
+```{r best fit correlogram, fig.height = 7, fig.width = 7}
+ggplot(wavg_df, aes(x=WeightedQ, y = WeightedD)) + facet_grid(rows = vars(Param2.Values), cols = vars(Param1.Values)) + geom_smooth(method=lm, se=TRUE) + xlab ("X Axis: Weighted Average of Quality; Facet: Param 1 values") + ylab ("Y Axis: Weighted Average of Distance; Facet: Param 2 values")
+```
+
+```{r best fit density plot, fig.height = 7, fig.width = 7}
+ggplot(wavg_df, aes(x=WeightedQ, y = WeightedD)) + facet_grid(rows = vars(Param2.Values), cols = vars(Param1.Values)) + xlab ("X Axis: Weighted Average of Quality; Facet: Param 1 values") + ylab ("Y Axis: Weighted Average of Distance; Facet: Param 2 values") +stat_density_2d(aes(fill = ..density..), geom = "raster", contour = FALSE) +
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_y_continuous(expand = c(0, 0)) +
+  theme(
+    legend.position='none'
+  )  + geom_smooth(method=lm, color = "red",  se=FALSE)
+```
+
+```{r histograms, fig.height = 7, fig.width = 7}
+# ⚠️ Note that these plots are summed over the values of the other parameter
+# To undo this, use %>% filter(Param2.Values == 1)) or equivalent
+# for some value of the parameter that was tested
+
+# PARAM 1 HISTOGRAMS
+wQprob_hist1 <- ggplot(data = wavg_df) +
+  geom_histogram(mapping = aes(x = WeightedQ, y = ..density..), binwidth = 1)+ facet_grid(rows = vars(Param1.Values))+labs (title = "Parameter 1 Quality Weighted Avg")
+
+wDprob_hist1 <- ggplot(data = wavg_df) +
+  geom_histogram(mapping = aes(x = WeightedD, y = ..density..), binwidth = .01)+ facet_grid(rows = vars(Param1.Values)) +labs (title = "Parameter 1 Distance Weighted Avg")
+
+# PARAM 2 HISTOGRAMS
+wQprob_hist2 <- ggplot(data = wavg_df) +
+  geom_histogram(mapping = aes(x = WeightedQ, y = ..density..), binwidth = 1)+ facet_grid(rows = vars(Param2.Values))+labs (title = "Parameter 2 Quality Weighted Avg")
+
+wDprob_hist2 <- ggplot(data = wavg_df) +
+  geom_histogram(mapping = aes(x = WeightedD, y = ..density..), binwidth = .01)+ facet_grid(rows = vars(Param2.Values)) +labs (title = "Parameter 2 Distance Weighted Avg")
+
+grid.arrange(wQprob_hist1, wDprob_hist1, wQprob_hist2, wDprob_hist2, ncol=2)
+```
+
+```{r box plots, fig.height = 7, fig.width = 7}}
+#⚠️ Note that these plots are summed over the values of the other parameter
+
+#PARAM 1 BOX PLOTS
+wQ_box1 <- ggplot(wavg_df, aes(x= as.factor(Param1.Values), y=WeightedQ)) + geom_boxplot(fill="slateblue", alpha=0.2) + xlab ("Param 1")
+
+wD_box1 <- ggplot(wavg_df, aes(x= as.factor(Param1.Values), y=WeightedD)) + geom_boxplot(fill="slateblue", alpha=0.2)+ xlab ("Param 1")
+
+wQ_box2 <- ggplot(wavg_df, aes(x= as.factor(Param2.Values), y=WeightedQ)) + geom_boxplot(fill="slateblue", alpha=0.2) + xlab ("Param 2")
+
+wD_box2 <- ggplot(wavg_df, aes(x= as.factor(Param2.Values), y=WeightedD)) + geom_boxplot(fill="slateblue", alpha=0.2)+ xlab ("Param 2")
+
+grid.arrange(wQ_box1, wD_box1,wQ_box2, wD_box2, ncol=2, nrow=2)
 ```
