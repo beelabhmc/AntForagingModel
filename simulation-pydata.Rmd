@@ -16,11 +16,11 @@ library(ggplot2)
 # Otherwise, update the read.csv to include your path
 
 # IMPORT PARAMETER CSV
-param_df <- read.csv("params_nov2.csv")
+param_df <- read.csv("params_gamma23_1000runs.csv")
 val_readout <- c(rbind(param_df$Param, param_df$Value))
 
 # IMPORT WEIGHTED AVERAGES DF
-wavg_df <- read.csv("gamma23_df_nov16.csv")
+wavg_df <- read.csv("gamma23_1000runs.csv")
 #param_df <- mutate(param_df, List = c(Param, Value))
 
 #head(param_df)
@@ -73,10 +73,10 @@ wavg_means <- wavg_df %>% group_by(Param1.Values, Param2.Values) %>%
 
 #View(wavg_means)
 
-wQ_heat <- ggplot(wavg_means, aes(Param1.Values, Param2.Values, fill= WeightedQ)) + 
+wQ_heat <- ggplot(wavg_means, aes(Param1.Values, Param2.Values, fill= WeightedQ)) +
   geom_tile()
 
-wD_heat <- ggplot(wavg_means, aes(Param1.Values, Param2.Values, fill= WeightedD)) + 
+wD_heat <- ggplot(wavg_means, aes(Param1.Values, Param2.Values, fill= WeightedD)) +
   geom_tile()
 
 require(gridExtra)
@@ -94,6 +94,25 @@ ggplot(wavg_df, aes(x=WeightedQ, y = WeightedD)) + facet_grid(rows = vars(Param2
   theme(
     legend.position='none'
   )  + geom_smooth(method=lm, color = "red",  se=FALSE)
+```
+
+```{r animated graphs}
+library(gganimate)
+library(gifski)
+
+makeAnimatedGraph <- function(df){
+  ggplot(df, aes(x=WeightedQ, y = WeightedD)) +
+    geom_point(alpha = 0.25, show.legend = FALSE) + #scale_size(range = c(2, 12)) +
+    facet_wrap(~Param1.Values) +
+    # gganimate-specific bits
+    labs(title = 'Param 1: {frame_time}', x = 'Weighted Q', y = 'Weighted D') +
+    transition_time(Param2.Values) +
+    ease_aes('linear')
+}
+
+grph <- makeAnimatedGraph(wavg_df)
+
+animate(grph, nframes = 100, fps = 10, end_pause = 20,renderer=gifski_renderer("test2.gif"))
 ```
 
 ```{r histograms, fig.height = 7, fig.width = 7}
