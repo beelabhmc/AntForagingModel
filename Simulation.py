@@ -45,6 +45,7 @@ x0 = np.zeros(J)         # We start with no ants on any of the trails
 
 all_params_names  =   ["runs", "J", "N", "alpha", "s", "gamma1", "gamma2", "gamma3", "K", "n1", "n2", "Qmin", "Qmax", "Dmin", "Dmax", "start", "stop", "step", "tspan", "x0"]
 all_params_vals   =   [runs, J, N, alpha, s, gamma1, gamma2, gamma3, K, n1, n2, Qmin, Qmax, Dmin, Dmax, start, stop, step, tspan, x0]
+
 #=================================================================================================#
 
 # SYSTEM OF EQUATIONS
@@ -69,7 +70,7 @@ prop_noncommitted_ants = np.zeros(len(tspan))   # Proportion of non committed an
 
 def simulation():
     for w in range(runs):
-        print(int(np.floor(w*100/runs)), "%")   # Progress counter
+        print(int(np.floor(w*100/runs)), "%")   # Progress bar
         Q = np.random.uniform(Qmin,Qmax,J)      # Choose each trail's quality from uniform distrib      
         D = np.random.uniform(Dmin,Dmax,J)      # Choose each trail's distance from uniform distrib     
         betaB = n1 * Q
@@ -81,6 +82,8 @@ def simulation():
         weight_avg_Q[w]  = sum((final_time[w,:] * Q)/N)  # Weighted average of quality (selected.Q in R)
         weight_avg_D[w]  = sum((final_time[w,:] * D)/N)  # Weighted average of distance (selected.D in R)
 
+#=================================================================================================#
+
 # PARAMETER SWEEPING
 
 # Here we choose one parameter to vary (param), specifying a range and number of values to try.
@@ -90,21 +93,28 @@ def simulation():
 
 # SWEEPING ONE PARAMETER
 
-# param            = np.linspace(9,15,3)          # (start, stop, # samples). Creates array of param values to test.
-# param_values     = []                           # specifies which value's used for param during each chunk of sim runs. used in df.
-# weight_avg_Q_tot = []                           # list of all the Q weighted avg values from all sim for all tested values of param
+# param            = np.linspace(9,15,3)        # (start, stop, # samples). Creates array of param values to test.
+# all_params_names.append("gamma1")             # ❗️⚠️ Update to match which params you're sweeping ⚠️❗️
+# all_params_vals.append(param)                 # Records what param values are being tested in the paramdf
+
+# param_values     = []                         # specifies which value's used for param during each chunk of sim runs. used in df.
+# weight_avg_Q_tot = []                         # list of all the Q weighted avg values from all sim for all tested values of param
 # weight_avg_D_tot = []
-# for p in range(len(param)):                     # for each value of param...
+# for p in range(len(param)):                   # for each value of param...
 #     gamma1 = param[p]
 #     simulation()
-#     param_values += ([param[p]] * runs)         # add param value (once for each run) to list of param values
-#     weight_avg_Q_tot += list(weight_avg_Q)      # add onto list of quality weighted averages with values for this set of runs
+#     param_values += ([param[p]] * runs)       # add param value (once for each run) to list of param values
+#     weight_avg_Q_tot += list(weight_avg_Q)    # add onto list of quality weighted averages with values for this set of runs
 #     weight_avg_D_tot += list(weight_avg_D)
 
 # SWEEPING TWO PARAMETERS
 
 param1           = np.linspace(1,50,10)         # ⚠️ Make sure that param1 and param2 have the same number elements in this array!
 param2           = np.linspace(1,50,10)         # You can also use np.arrange if you want to do specify, stop, step
+
+all_params_names.extend("gamma2", "gamma3")     # ❗️⚠️ Update to match which params you're sweeping ⚠️❗️
+all_params_vals.extend(param1, param2)          # Records what param values are being tested in the paramdf
+
 param1_values    = []   
 param2_values    = []                           # specifies which value's used for param during each chunk of sim runs. used in df.
 weight_avg_Q_tot = []                           # list of all the Q weighted avg values from all sim for all tested values of param
@@ -124,6 +134,7 @@ for p in range(len(param1)):                    # for each value of param1... no
 # CREATING CSVs
 
 # Create dataframe of all of the parameters we're using in this set of runs
+# This can help us recreate graphs and recall the context of each sweep
 paramd = {'Param': all_params_names, 'Value': all_params_vals}
 paramdf = pd.DataFrame(data=paramd)
 #print(paramdf)
@@ -132,11 +143,12 @@ paramdf = pd.DataFrame(data=paramd)
 paramdf.to_csv(r'/Users/nfn/Desktop/Ants/params_nov16.csv', index = False) # Fletcher's path
 #paramdf.to_csv( INSERT PATH , index = False)                             # Miguel's path
 
-
-# Create dataframe
+# Create sweep's dataframe
+# One parameter:
+# d = {'Param Values': param_values, 'WeightedQ': weight_avg_Q_tot,'WeightedD': weight_avg_D_tot}
+# Two parameters:
 d = {'Param1 Values': param1_values, 'Param2 Values': param2_values, 'WeightedQ': weight_avg_Q_tot,'WeightedD': weight_avg_D_tot}
 df = pd.DataFrame(data=d)
-#print(df)
 
 # Export
 df.to_csv(r'/Users/nfn/Desktop/Ants/gamma23_df_nov16.csv', index = False) # Fletcher's path
