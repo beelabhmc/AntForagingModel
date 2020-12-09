@@ -59,6 +59,16 @@ def dx_dt(x,t,Q,D,betaB,betaS):
     system = (alpha* np.exp(-gamma1*D) + (gamma2/D)*betaB*x)*(N-sum(x)) - (s*D*x)/(K+ (gamma3/D)*betaS*x)
     return system
 
+def jacobian(x,t,Q,D,betaB,betaS):
+    jac_matrix = np.zeros([J,J]) 
+    for i in range(J):
+        for j in range(J):
+            if i == j:
+                jac_matrix[i,i] = ((gamma2/D[i])*betaB[i]*x[i]*(N-sum(x))) - (alpha* np.exp(-gamma1*D[i])) - ((gamma2/D[i])*betaB[i]*x[i]) -  (gamma3/D[i])*betaS[i]*((s*D[i])/(K+((gamma3/D[i])*betaS[i]*x[i]) )**2 ) + ((s*D[i])/  (K+ (gamma3/D[i])*betaS[i]*x[i])  )                         
+            else:
+                jac_matrix[i,j] = - ( (alpha* np.exp(-gamma1*D[i])) + ((gamma2/D[i])*betaB[i]*x[i]) )
+    return jac_matrix
+
 # RUNS AND MODEL OUTPUT
 
 density      = np.zeros([runs,J])
