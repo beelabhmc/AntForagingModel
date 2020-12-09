@@ -10,7 +10,7 @@ import sys
 
 # PARAMETERS 
 
-runs   = 100             # How many times we run the simulation
+runs   = 500             # How many times we run the simulation
 J      = 5               # Number of food sources (aka, number of trails to food sources)
 N      = 5000            # Total number of ants
 alpha  = 9.170414e+01    # Per capita rate of spontaneous discoveries
@@ -65,12 +65,14 @@ density      = np.zeros([runs,J])
 final_time   = np.zeros([runs,J])
 weight_avg_Q = np.zeros(runs)                   # Sum of (# of ants on a trail * its quality)
 weight_avg_D = np.zeros(runs)                   # Sum of (# of ants on a trail * its distance)
+avg_Q = np.zeros(runs)  
+avg_D = np.zeros(runs)  
 prop_committed_ants    = np.zeros(len(tspan))   # Proportion of committed ants 
 prop_noncommitted_ants = np.zeros(len(tspan))   # Proportion of non committed ants 
 
 def simulation():
     for w in range(runs):
-        print(int(np.floor(w*100/runs)), "%")   # Progress bar
+        # print(int(np.floor(w*100/runs)), "%")   # Progress bar
         Q = np.random.uniform(Qmin,Qmax,J)      # Choose each trail's quality from uniform distrib      
         D = np.random.uniform(Dmin,Dmax,J)      # Choose each trail's distance from uniform distrib     
         betaB = n1 * Q
@@ -81,6 +83,12 @@ def simulation():
     
         weight_avg_Q[w]  = sum((final_time[w,:] * Q)/N)  # Weighted average of quality (selected.Q in R)
         weight_avg_D[w]  = sum((final_time[w,:] * D)/N)  # Weighted average of distance (selected.D in R)
+
+        avg_Q[w]  = sum(Q/J)  # Weighted average of quality (selected.Q in R)
+        avg_D[w]  = sum(D/J)  # Weighted average of distance (selected.D in R)
+
+    dif_btwn_avgs_Q = weight_avg_Q - avg_Q   # positive difference- picking better than environment
+    dif_btwn_avgs_D = weight_avg_D - avg_D   # negative difference- picking better than environment
 
 #=================================================================================================#
 
@@ -93,15 +101,15 @@ def simulation():
 
 # SWEEPING ONE PARAMETER
 
-# param            = np.linspace(9,15,3)        # (start, stop, # samples). Creates array of param values to test.
-# all_params_names.append("gamma1")             # ❗️⚠️ Update to match which params you're sweeping ⚠️❗️
+# param            = np.linspace(0,0.1,10)        # (start, stop, # samples). Creates array of param values to test.
+# all_params_names.append("gamma3")             # ❗️⚠️ Update to match which params you're sweeping ⚠️❗️
 # all_params_vals.append(param)                 # Records what param values are being tested in the paramdf
 
 # param_values     = []                         # specifies which value's used for param during each chunk of sim runs. used in df.
 # weight_avg_Q_tot = []                         # list of all the Q weighted avg values from all sim for all tested values of param
 # weight_avg_D_tot = []
 # for p in range(len(param)):                   # for each value of param...
-#     gamma1 = param[p]
+#     gamma3 = param[p]
 #     simulation()
 #     param_values += ([param[p]] * runs)       # add param value (once for each run) to list of param values
 #     weight_avg_Q_tot += list(weight_avg_Q)    # add onto list of quality weighted averages with values for this set of runs
@@ -109,18 +117,21 @@ def simulation():
 
 # SWEEPING TWO PARAMETERS
 
-param1           = np.linspace(1,50,10)         # ⚠️ Make sure that param1 and param2 have the same number elements in this array!
-param2           = np.linspace(1,50,10)         # You can also use np.arrange if you want to do specify, stop, step
+param1           = np.linspace(0,0.1,10)         # ⚠️ Make sure that param1 and param2 have the same number elements in this array!
+param2           = np.linspace(0,0.1,10)         # You can also use np.arrange if you want to do specify, stop, step
 
-all_params_names.extend("gamma2", "gamma3")     # ❗️⚠️ Update to match which params you're sweeping ⚠️❗️
-all_params_vals.extend(param1, param2)          # Records what param values are being tested in the paramdf
+# all_params_names.extend("gamma2", "gamma3")     # ❗️⚠️ Update to match which params you're sweeping ⚠️❗️
+# all_params_vals.extend(param1, param2)          # Records what param values are being tested in the paramdf
 
 param1_values    = []   
 param2_values    = []                           # specifies which value's used for param during each chunk of sim runs. used in df.
 weight_avg_Q_tot = []                           # list of all the Q weighted avg values from all sim for all tested values of param
 weight_avg_D_tot = []
+dif_btwn_avgs_Q_tot = []
+dif_btwn_avgs_D_tot = []
 for p in range(len(param1)):                    # for each value of param1... note- (len(param1) = len(param2))                         
     for q in range(len(param2)):
+        print(int(np.floor(p*100/len(param2))), "%") # Progress bar
         gamma2 = param1[p]                      # Specify the first param you want to sweep
         gamma3 = param2[q]                      # Specify the second param you want to sweep
         simulation()  
@@ -128,37 +139,43 @@ for p in range(len(param1)):                    # for each value of param1... no
         param2_values += ([param2[q]] * runs)  
         weight_avg_Q_tot += list(weight_avg_Q)  # add onto list of quality weighted averages with values for this set of runs
         weight_avg_D_tot += list(weight_avg_D)
+        dif_btwn_avgs_Q_tot += list(dif_btwn_avgs_Q)
+        dif_btwn_avgs_D_tot += list(dif_btwn_avgs_D)
 
 #=================================================================================================#
 
 # CREATING CSVs
 
+# PARAMETERS
 # Create dataframe of all of the parameters we're using in this set of runs
 # This can help us recreate graphs and recall the context of each sweep
 paramd = {'Param': all_params_names, 'Value': all_params_vals}
 paramdf = pd.DataFrame(data=paramd)
 #print(paramdf)
 
-# Export
-paramdf.to_csv(r'/Users/nfn/Desktop/Ants/params_nov16.csv', index = False) # Fletcher's path
+# QUALITY DIST SWEEP DATA
+# One parameter:
+# df = {'Param Values': param_values, 'WeightedQ': weight_avg_Q_tot,'WeightedD': weight_avg_D_tot, 'Dif Avgs Q': dif_btwn_avgs_Q_tot, 'Dif Avgs D': dif_btwn_avgs_D_tot}
+# Two parameters:
+df = {'Param1 Values': param1_values, 'Param2 Values': param2_values, 'WeightedQ': weight_avg_Q_tot,'WeightedD': weight_avg_D_tot, 'Dif Avgs Q': dif_btwn_avgs_Q_tot, 'Dif Avgs D': dif_btwn_avgs_D_tot}
+df = pd.DataFrame(data=df)
+
+# EXPORT
+# Filename format: [params_ for param DF][swept parameters]_[# of runs]
+
+# PARAMETERS
+paramdf.to_csv(r'/Users/nfn/Desktop/Ants/params_gamma23_tiny_500r.csv', index = False) # Fletcher's path
 #paramdf.to_csv( INSERT PATH , index = False)                             # Miguel's path
 
-# Create sweep's dataframe
-# One parameter:
-# d = {'Param Values': param_values, 'WeightedQ': weight_avg_Q_tot,'WeightedD': weight_avg_D_tot}
-# Two parameters:
-d = {'Param1 Values': param1_values, 'Param2 Values': param2_values, 'WeightedQ': weight_avg_Q_tot,'WeightedD': weight_avg_D_tot}
-df = pd.DataFrame(data=d)
-
-# Export
-df.to_csv(r'/Users/nfn/Desktop/Ants/gamma23_df_nov16.csv', index = False) # Fletcher's path
+# QUALITY DIST SWEEP DATA
+df.to_csv(r'/Users/nfn/Desktop/Ants/gamma23_tiny_500r.csv', index = False) # Fletcher's path
 #df.to_csv( INSERT PATH , index = False)                                  # Miguel's path
 
 #=================================================================================================#
 
 # PLOTTING
 
-plt.rc('font', family='serif')
+#plt.rc('font', family='serif')
 
 # The number of ants on each trail over time
 #plt.figure()
