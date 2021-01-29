@@ -16,11 +16,11 @@ library(ggplot2)
 # Otherwise, update the read.csv to include your path
 
 # IMPORT PARAMETER CSV
-param_df <- read.csv("params_gamma23_1000runs.csv")
-val_readout <- c(rbind(param_df$Param, param_df$Value))
+#param_df <- read.csv("params_gamma23_1000runs.csv")
+#val_readout <- c(rbind(param_df$Param, param_df$Value))
 
 # IMPORT WEIGHTED AVERAGES DF
-wavg_df <- read.csv("gamma23_1000runs.csv")
+wavg_df <- read.csv("gamma23_tiny_500r.csv")
 #param_df <- mutate(param_df, List = c(Param, Value))
 
 #head(param_df)
@@ -43,20 +43,20 @@ require(gridExtra)
 # capt4 <- paste(capt0, "\n", capt1, "\n", capt2, "\n", capt3)
 
 wQprob_hist <- ggplot(data = wavg_df) +
-  geom_histogram(mapping = aes(x = WeightedQ, y = ..density..), binwidth = 1)+ facet_grid(rows = vars(Param.Values))+labs (title = "gamma1")+
+  geom_histogram(mapping = aes(x = WeightedQ, y = ..density..), binwidth = 1)+ facet_grid(rows = vars(Param.Values))+labs (title = "gamma3")+
     theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
 wDprob_hist <- ggplot(data = wavg_df) +
-  geom_histogram(mapping = aes(x = WeightedD, y = ..density..), binwidth = .01)+ facet_grid(rows = vars(Param.Values)) +labs (title = "gamma1")+
+  geom_histogram(mapping = aes(x = WeightedD, y = ..density..), binwidth = .01)+ facet_grid(rows = vars(Param.Values)) +labs (title = "gamma3")+
     theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
 #Another option: y = ..scaled.. (Scales to highest value is 1)
 
 grid.arrange(wQprob_hist, wDprob_hist, ncol=2)#, bottom = capt4)
 
-wQ_box<- ggplot(wavg_df, aes(x= as.factor(Param.Values), y=WeightedQ)) + geom_boxplot(fill="slateblue", alpha=0.2) + xlab ("Gamma1 values")
+wQ_box<- ggplot(wavg_df, aes(x= as.factor(Param.Values), y=WeightedQ)) + geom_boxplot(fill="slateblue", alpha=0.2) + xlab ("Gamma3 values")
 
-wD_box<- ggplot(wavg_df, aes(x= as.factor(Param.Values), y=WeightedD)) + geom_boxplot(fill="slateblue", alpha=0.2)+ xlab ("Gamma1 values")
+wD_box<- ggplot(wavg_df, aes(x= as.factor(Param.Values), y=WeightedD)) + geom_boxplot(fill="slateblue", alpha=0.2)+ xlab ("Gamma3 values")
 
 grid.arrange(wQ_box, wD_box, ncol=2)
 
@@ -67,17 +67,19 @@ grid.arrange(wQ_box, wD_box, ncol=2)
 ```{r heatmap TWO params, fig.height = 2.5, fig.width = 6}
 
 # 
+wavg_df <- wavg_df %>% filter(Param1.Values > 0 & Param2.Values >0)
+
+View(wavg_df)
 wavg_means <- wavg_df %>% group_by(Param1.Values, Param2.Values) %>%
   summarize(WeightedQ = mean(WeightedQ),
             WeightedD = mean(WeightedD))
-
-#View(wavg_means)
+View(wavg_means)
 
 wQ_heat <- ggplot(wavg_means, aes(Param1.Values, Param2.Values, fill= WeightedQ)) +
-  geom_tile()
+  geom_tile() + xlab("Gamma 2") + ylab("Gamma 3")
 
 wD_heat <- ggplot(wavg_means, aes(Param1.Values, Param2.Values, fill= WeightedD)) +
-  geom_tile()
+  geom_tile() + xlab("Gamma 2") + ylab("Gamma 3")
 
 require(gridExtra)
 grid.arrange(wQ_heat, wD_heat, ncol=2)
