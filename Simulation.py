@@ -33,7 +33,7 @@ betaS  = np.zeros(J)     # Relationship btwn pheromone strength of a trail & its
 # TIME 
 
 start = 0.0
-stop  = 50.0
+stop  = 50.0            # One of our goals is to change this cutoff to reflect convergence
 step  = 0.005
 tspan = np.arange(start, stop+step, step)
 
@@ -41,7 +41,7 @@ tspan = np.arange(start, stop+step, step)
 
 x0 = np.zeros(J)         # We start with no ants on any of the trails
 
-# LIST (for exporting)
+# LIST OF PARAMETERS    (for exporting/reproducing results)
 
 all_params_names  =   ["runs", "J", "N", "alpha", "s", "gamma1", "gamma2", "gamma3", "K", "n1", "n2", "Qmin", "Qmax", "Dmin", "Dmax", "start", "stop", "step", "tspan", "x0"]
 all_params_vals   =   [runs, J, N, alpha, s, gamma1, gamma2, gamma3, K, n1, n2, Qmin, Qmax, Dmin, Dmax, start, stop, step, tspan, x0]
@@ -63,28 +63,30 @@ def dx_dt(x,t,Q,D,betaB,betaS):
 
 density      = np.zeros([runs,J])
 final_time   = np.zeros([runs,J])
-weight_avg_Q = np.zeros(runs)                   # Sum of (# of ants on a trail * its quality)
-weight_avg_D = np.zeros(runs)                   # Sum of (# of ants on a trail * its distance)
-prop_committed_ants    = np.zeros(len(tspan))   # Proportion of committed ants 
-prop_noncommitted_ants = np.zeros(len(tspan))   # Proportion of non committed ants 
+weight_avg_Q = np.zeros(runs)                   # Sum of (# of ants on a trail * its quality) over all trails
+weight_avg_D = np.zeros(runs)                   # Sum of (# of ants on a trail * its distance) over all trails
+prop_committed_ants    = np.zeros(len(tspan))   # Proportion of committed ants (committed =  on a trail)
+prop_noncommitted_ants = np.zeros(len(tspan))   # Proportion of non-committed ants 
 
 def simulation():
     for w in range(runs):
-        print(int(np.floor(w*100/runs)), "%")   # Progress bar
-        Q = np.random.uniform(Qmin,Qmax,J)      # Choose each trail's quality from uniform distrib      
-        D = np.random.uniform(Dmin,Dmax,J)      # Choose each trail's distance from uniform distrib     
+        print(int(np.floor(w*100/runs)), "% 🐜") # Progress bar to reassure us that the code's running
+        Q = np.random.uniform(Qmin,Qmax,J)      # Choose each trail's quality from uniform distribution      
+        D = np.random.uniform(Dmin,Dmax,J)      # Choose each trail's distance from uniform distribution     
         betaB = n1 * Q
         betaS = n2 * Q
 
         xs = odeint(dx_dt, x0, tspan, args=(Q,D,betaB,betaS))   # Solves the system. Columns: trail (food source), Rows: time step
         final_time[w,:] = xs[-1,:]              # 2D array of # of ants on each trail at the last timestep. Columns: trail (food source), Rows: runs.
-    
+                                                # note- we use the same end time for each simulation, it isn't guaranteed to have converged
+
         weight_avg_Q[w]  = sum((final_time[w,:] * Q)/N)  # Weighted average of quality (selected.Q in R)
         weight_avg_D[w]  = sum((final_time[w,:] * D)/N)  # Weighted average of distance (selected.D in R)
 
 #=================================================================================================#
 
 # PARAMETER SWEEPING
+"""Remember to comment out the type of parameter sweep you aren't using."""
 
 # Here we choose one parameter to vary (param), specifying a range and number of values to try.
 # • We are exporting weighted avg info in a tidy csv, so we're creating 3 different lists
@@ -93,26 +95,30 @@ def simulation():
 
 # SWEEPING ONE PARAMETER
 
-# param            = np.linspace(9,15,3)        # (start, stop, # samples). Creates array of param values to test.
-# all_params_names.append("gamma1")             # ❗️⚠️ Update to match which params you're sweeping ⚠️❗️
-# all_params_vals.append(param)                 # Records what param values are being tested in the paramdf
+"""
+param            = np.linspace(9,15,3)        # (start, stop, # samples). Creates array of param values to test.
+all_params_names.append("gamma1")             # ⬅️❗️🐝 Update to match which params you're sweeping 🐝❗️
+all_params_vals.append(param)                 # Records what param values are being tested in the paramdf
 
-# param_values     = []                         # specifies which value's used for param during each chunk of sim runs. used in df.
-# weight_avg_Q_tot = []                         # list of all the Q weighted avg values from all sim for all tested values of param
-# weight_avg_D_tot = []
-# for p in range(len(param)):                   # for each value of param...
-#     gamma1 = param[p]
-#     simulation()
-#     param_values += ([param[p]] * runs)       # add param value (once for each run) to list of param values
-#     weight_avg_Q_tot += list(weight_avg_Q)    # add onto list of quality weighted averages with values for this set of runs
-#     weight_avg_D_tot += list(weight_avg_D)
+param_values     = []                         # specifies which value's used for param during each chunk of sim runs. used in df.
+weight_avg_Q_tot = []                         # list of all the Q weighted avg values from all sim for all tested values of param
+weight_avg_D_tot = []
+for p in range(len(param)):                   # for each value of param...
+    gamma1 = param[p]                         # ⬅️❗️🐝 Update to match which params you're sweeping 🐝❗️
+    simulation()
+    param_values += ([param[p]] * runs)       # add param value (once for each run) to list of param values
+    weight_avg_Q_tot += list(weight_avg_Q)    # add onto list of quality weighted averages with values for this set of runs
+    weight_avg_D_tot += list(weight_avg_D)
+"""
+
+#===============================#
 
 # SWEEPING TWO PARAMETERS
 
 param1           = np.linspace(1,50,10)         # ⚠️ Make sure that param1 and param2 have the same number elements in this array!
 param2           = np.linspace(1,50,10)         # You can also use np.arrange if you want to do specify, stop, step
 
-all_params_names.extend("gamma2", "gamma3")     # ❗️⚠️ Update to match which params you're sweeping ⚠️❗️
+all_params_names.extend("gamma2", "gamma3")     # ⬅️❗️⚠️ Update to match which params you're sweeping ⚠️❗️
 all_params_vals.extend(param1, param2)          # Records what param values are being tested in the paramdf
 
 param1_values    = []   
@@ -121,8 +127,8 @@ weight_avg_Q_tot = []                           # list of all the Q weighted avg
 weight_avg_D_tot = []
 for p in range(len(param1)):                    # for each value of param1... note- (len(param1) = len(param2))                         
     for q in range(len(param2)):
-        gamma2 = param1[p]                      # Specify the first param you want to sweep
-        gamma3 = param2[q]                      # Specify the second param you want to sweep
+        gamma2 = param1[p]                      # ⬅️❗️⚠️ Specify the first param you want to sweep  ⚠️❗️
+        gamma3 = param2[q]                      # ⬅️❗️⚠️ Specify the second param you want to sweep ⚠️❗️
         simulation()  
         param1_values += ([param1[p]] * runs)   # add param1 value (once for each run) to list of param values
         param2_values += ([param2[q]] * runs)  
@@ -140,8 +146,11 @@ paramdf = pd.DataFrame(data=paramd)
 #print(paramdf)
 
 # Export
+#❗🐝 Remember to change filename 🐝❗️#
 paramdf.to_csv(r'/Users/nfn/Desktop/Ants/params_nov16.csv', index = False) # Fletcher's path
-#paramdf.to_csv( INSERT PATH , index = False)                             # Miguel's path
+#paramdf.to_csv( INSERT PATH , index = False)                              # David's path
+
+#===========#
 
 # Create sweep's dataframe
 # One parameter:
@@ -151,51 +160,54 @@ d = {'Param1 Values': param1_values, 'Param2 Values': param2_values, 'WeightedQ'
 df = pd.DataFrame(data=d)
 
 # Export
+#❗️🐝 Remember to change filename 🐝❗️#
 df.to_csv(r'/Users/nfn/Desktop/Ants/gamma23_df_nov16.csv', index = False) # Fletcher's path
-#df.to_csv( INSERT PATH , index = False)                                  # Miguel's path
+#df.to_csv( INSERT PATH , index = False)                                  # David's path
 
 #=================================================================================================#
 
 # PLOTTING
 
-plt.rc('font', family='serif')
+# We now do our plotting/visuals in R, but this is here in case we want quick graphs for a particular run.
+
+# plt.rc('font', family='serif')
 
 # The number of ants on each trail over time
-#plt.figure()
-#for i in range(J):
+# plt.figure()
+# for i in range(J):
 #    plt.plot(tspan, xs[:,i], label = str(i+1)) 
-#plt.title('Number of ants over time',fontsize=15)
-#plt.xlabel('Time',fontsize=15)
-#plt.ylabel('Number of ants',fontsize=15)
-#plt.legend(title='Trail', bbox_to_anchor=(1.01, 0.5), loc='center left', borderaxespad=0.)
+# plt.title('Number of ants over time',fontsize=15)
+# plt.xlabel('Time',fontsize=15)
+# plt.ylabel('Number of ants',fontsize=15)
+# plt.legend(title='Trail', bbox_to_anchor=(1.01, 0.5), loc='center left', borderaxespad=0.)
 
 # The proportion of ants committed to a trail
-#plt.figure()
-#plt.plot(tspan, prop_committed_ants) 
-#plt.title('Proportion of committed ants',fontsize=15)
-#plt.xlabel('Time',fontsize=15)
-#plt.ylabel('Proportion',fontsize=15)
+# plt.figure()
+# plt.plot(tspan, prop_committed_ants) 
+# plt.title('Proportion of committed ants',fontsize=15)
+# plt.xlabel('Time',fontsize=15)
+# plt.ylabel('Proportion',fontsize=15)
 
 # Plotting histogram of weighted average of quality
-#plt.figure()
-#plt.bar(Q_edges, Q_hist, width = 0.5, color='#0504aa',alpha=0.7)
-#plt.title('Histogram of weighted av Q in trials',fontsize=15)
-#plt.xlabel('bins',fontsize=15)
-#plt.ylabel('weighted Q',fontsize=15)
+# plt.figure()
+# plt.bar(Q_edges, Q_hist, width = 0.5, color='#0504aa',alpha=0.7)
+# plt.title('Histogram of weighted av Q in trials',fontsize=15)
+# plt.xlabel('bins',fontsize=15)
+# plt.ylabel('weighted Q',fontsize=15)
 
 # Plotting histogram of weighted average of quality
-#plt.figure()
-#plt.hist(weight_avg_Q, bins = 50)
-#plt.title('Histogram of weighted av Q in trials',fontsize=15)
-#plt.xlabel('weighted Q',fontsize=15)
-#plt.ylabel('count',fontsize=15)
+# plt.figure()
+# plt.hist(weight_avg_Q, bins = 50)
+# plt.title('Histogram of weighted av Q in trials',fontsize=15)
+# plt.xlabel('weighted Q',fontsize=15)
+# plt.ylabel('count',fontsize=15)
 
 # Plotting histogram of weighted average of distance
-#plt.figure()
-#plt.hist(weight_avg_D, bins = 50)
-#plt.title('Histogram of weighted av D in trials',fontsize=15)
-#plt.xlabel('weighted D',fontsize=15)
-#plt.ylabel('count',fontsize=15)
+# plt.figure()
+# plt.hist(weight_avg_D, bins = 50)
+# plt.title('Histogram of weighted av D in trials',fontsize=15)
+# plt.xlabel('weighted D',fontsize=15)
+# plt.ylabel('count',fontsize=15)
 
 # # Plotting Probability distribution of quality weighted average
 # plt.figure()
