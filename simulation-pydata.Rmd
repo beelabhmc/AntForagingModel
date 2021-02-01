@@ -20,7 +20,7 @@ library(ggplot2)
 #val_readout <- c(rbind(param_df$Param, param_df$Value))
 
 # IMPORT WEIGHTED AVERAGES DF
-wavg_df <- read.csv("gamma23_tiny_500r.csv")
+wavg_df <- read.csv("gamma23_df_feb1_test.csv")
 #param_df <- mutate(param_df, List = c(Param, Value))
 
 #head(param_df)
@@ -98,7 +98,7 @@ ggplot(wavg_df, aes(x=WeightedQ, y = WeightedD)) + facet_grid(rows = vars(Param2
   )  + geom_smooth(method=lm, color = "red",  se=FALSE)
 ```
 
-```{r animated graphs}
+```{r animated graphs, eval = FALSE}
 library(gganimate)
 library(gifski)
 
@@ -137,6 +137,21 @@ wDprob_hist2 <- ggplot(data = wavg_df) +
   geom_histogram(mapping = aes(x = WeightedD, y = ..density..), binwidth = .01)+ facet_grid(rows = vars(Param2.Values)) +labs (title = "Parameter 2 Distance Weighted Avg")
 
 grid.arrange(wQprob_hist1, wDprob_hist1, wQprob_hist2, wDprob_hist2, ncol=2)
+```
+
+```{r difference btwn averages, fig.height = 7, fig.width = 7}
+# positive difference for Q- picking better quality than environment's average
+# positive difference for D- picking sources farther than environment's average
+#dif_btwn_avgs_D[w] = weight_avg_D[w] - avg_D[w]   # negative difference- picking better than environment
+
+difQplot <- ggplot(data = wavg_df) +
+  geom_histogram(mapping = aes(x = Dif.Avgs.Q, y = ..density..), binwidth = 1)+ facet_grid(rows = vars(Param1.Values), cols = vars(Param2.Values))+labs (title = "Difference = Weighted Avg Quality — Avg Quality") + xlab("Gamma 2")+ ylab("Gamma 3") + geom_vline(xintercept = 0, color = "red", size=0.5)
+
+difDplot <- ggplot(data = wavg_df) +
+  geom_histogram(mapping = aes(x = Dif.Avgs.D, y = ..density..), binwidth = .02)+ facet_grid(rows = vars(Param1.Values), cols = vars(Param2.Values))+labs (title = "Difference = Weighted Avg Dist - Avg Dist") + xlab("Gamma 2")+ ylab("Gamma 3") + geom_vline(xintercept = 0, color = "red", size=0.5)
+
+grid.arrange(difQplot, difDplot, ncol=2)
+
 ```
 
 ```{r box plots, fig.height = 7, fig.width = 7}}
