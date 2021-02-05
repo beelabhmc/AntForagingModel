@@ -10,7 +10,7 @@ import sys
 
 # PARAMETERS 
 
-runs   = 100             # How many times we run the simulation
+runs   = 1000             # How many times we run the simulation
 J      = 5               # Number of food sources (aka, number of trails to food sources)
 N      = 5000            # Total number of ants
 alpha  = 9.170414e+01    # Per capita rate of spontaneous discoveries
@@ -123,12 +123,16 @@ all_params_vals.append(param)                 # Records what param values are be
 param_values     = []                         # specifies which value's used for param during each chunk of sim runs. used in df.
 weight_avg_Q_tot = []                         # list of all the Q weighted avg values from all sim for all tested values of param
 weight_avg_D_tot = []
+dif_btwn_avgs_Q_tot = []
+dif_btwn_avgs_D_tot = []
 for p in range(len(param)):                   # for each value of param...
     gamma1 = param[p]                         # ⬅️❗️🐝 Update to match which params you're sweeping 🐝❗️
     simulation()
     param_values += ([param[p]] * runs)       # add param value (once for each run) to list of param values
     weight_avg_Q_tot += list(weight_avg_Q)    # add onto list of quality weighted averages with values for this set of runs
     weight_avg_D_tot += list(weight_avg_D)
+    dif_btwn_avgs_Q_tot += list(dif_btwn_avgs_Q)
+    dif_btwn_avgs_D_tot += list(dif_btwn_avgs_D)
 """
 
 #===============================#
