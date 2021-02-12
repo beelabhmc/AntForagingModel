@@ -10,7 +10,7 @@ import sys
 
 # PARAMETERS 
 
-runs   = 1000             # How many times we run the simulation
+runs   = 100             # How many times we run the simulation
 J      = 5               # Number of food sources (aka, number of trails to food sources)
 N      = 5000            # Total number of ants
 alpha  = 9.170414e+01    # Per capita rate of spontaneous discoveries
@@ -59,15 +59,6 @@ def dx_dt(x,t,Q,D,betaB,betaS):
     system = (alpha* np.exp(-gamma1*D) + (gamma2/D)*betaB*x)*(N-sum(x)) - (s*D*x)/(K+ (gamma3/D)*betaS*x)
     return system
 
-def jacobian(x,t,Q,D,betaB,betaS):
-    jac_matrix = np.zeros([J,J]) 
-    for i in range(J):
-        for j in range(J):
-            if i == j:
-                jac_matrix[i,i] = ((gamma2/D[i])*betaB[i]*x[i]*(N-sum(x))) - (alpha* np.exp(-gamma1*D[i])) - ((gamma2/D[i])*betaB[i]*x[i]) -  (gamma3/D[i])*betaS[i]*((s*D[i])/(K+((gamma3/D[i])*betaS[i]*x[i]) )**2 ) + ((s*D[i])/  (K+ (gamma3/D[i])*betaS[i]*x[i])  )                         
-            else:
-                jac_matrix[i,j] = - ( (alpha* np.exp(-gamma1*D[i])) + ((gamma2/D[i])*betaB[i]*x[i]) )
-    return jac_matrix
 
 # RUNS AND MODEL OUTPUT
 
@@ -76,11 +67,12 @@ final_time   = np.zeros([runs,J])
 weight_avg_Q = np.zeros(runs)                   # Sum of (# of ants on a trail * its quality) over all trails
 weight_avg_D = np.zeros(runs)                   # Sum of (# of ants on a trail * its distance) over all trails
 avg_Q = np.zeros(runs)  
-avg_D = np.zeros(runs) 
+avg_D = np.zeros(runs)
 dif_btwn_avgs_Q = np.zeros(runs)  
 dif_btwn_avgs_D = np.zeros(runs)  
 prop_committed_ants    = np.zeros(len(tspan))   # Proportion of committed ants (committed =  on a trail)
 prop_noncommitted_ants = np.zeros(len(tspan))   # Proportion of non-committed ants 
+xs = np.zeros(runs)  
 
 def simulation():
     for w in range(runs):
@@ -102,6 +94,15 @@ def simulation():
 
         dif_btwn_avgs_Q[w] = weight_avg_Q[w] - avg_Q[w]   # positive difference- picking better than environment
         dif_btwn_avgs_D[w] = weight_avg_D[w] - avg_D[w]   # negative difference- picking better than environment
+
+
+    return (xs)     #this is just the data of # of ants on each trail for the last run
+
+"""Run below only when not parameter sweeping:"""
+solutiondata = simulation()
+# You can remove the below 2 lines when not graphing in this file
+for t in range(len(tspan)):
+    prop_committed_ants[t]    = sum(xs[t,:]/N)
 
 #=================================================================================================#
 
@@ -139,6 +140,7 @@ for p in range(len(param)):                   # for each value of param...
 
 # SWEEPING TWO PARAMETERS
 
+"""
 #                 (start, stop, number of terms)
 param1           = np.linspace(0.0000001,0.1,5)         # ⚠️ Make sure that param1 and param2 have the same number elements in this array!
 param2           = np.linspace(0.0000001,0.1,5)         # You can also use np.arrange for (start, stop, step)
@@ -164,10 +166,14 @@ for p in range(len(param1)):                    # for each value of param1... no
         weight_avg_D_tot += list(weight_avg_D)
         dif_btwn_avgs_Q_tot += list(dif_btwn_avgs_Q)
         dif_btwn_avgs_D_tot += list(dif_btwn_avgs_D)
+"""
         
 #=================================================================================================#
 
-# CREATING CSVs
+# CREATING CSVs FOR EXPORT
+
+solutiondf = pd.DataFrame(data=solutiondata)
+solutiondf.to_csv(r'/Users/nfn/Desktop/Ants/soln-test.csv', index = False) # Fletcher's path
 
 # Create dataframe of all of the parameters we're using in this set of runs
 # This can help us recreate graphs and recall the context of each sweep
@@ -182,18 +188,20 @@ paramdf.to_csv(r'/Users/nfn/Desktop/Ants/params_feb1_test.csv', index = False) #
 
 #===========#
 
+"""For parameter sweep only:"""
+
 # Create sweep's dataframe
 #❗🐝 Update to reflect which sweep you did 🐝❗️#
-# One parameter:
+"""One parameter sweep:"""
 # d = {'Param Values': param_values, 'WeightedQ': weight_avg_Q_tot,'WeightedD': weight_avg_D_tot, 'Dif Avgs Q': dif_btwn_avgs_Q_tot, 'Dif Avgs D': dif_btwn_avgs_D_tot}
-# Two parameters:
-d = {'Param1 Values': param1_values, 'Param2 Values': param2_values, 'WeightedQ': weight_avg_Q_tot,'WeightedD': weight_avg_D_tot, 'Dif Avgs Q': dif_btwn_avgs_Q_tot, 'Dif Avgs D': dif_btwn_avgs_D_tot}
-
-df = pd.DataFrame(data=d)
+"""Two parameter sweep:"""
+# d = {'Param1 Values': param1_values, 'Param2 Values': param2_values, 'WeightedQ': weight_avg_Q_tot,'WeightedD': weight_avg_D_tot, 'Dif Avgs Q': dif_btwn_avgs_Q_tot, 'Dif Avgs D': dif_btwn_avgs_D_tot}
+"""Both:"""
+# df = pd.DataFrame(data=d)
 
 # Export
 #❗️🐝 Remember to change filename 🐝❗️#
-df.to_csv(r'/Users/nfn/Desktop/Ants/gamma23_df_feb1_test.csv', index = False) # Fletcher's path
+# df.to_csv(r'/Users/nfn/Desktop/Ants/gamma23_df_feb1_test.csv', index = False) # Fletcher's path
 #df.to_csv( INSERT PATH , index = False)                                  # David's path
 
 #=================================================================================================#
@@ -202,58 +210,78 @@ df.to_csv(r'/Users/nfn/Desktop/Ants/gamma23_df_feb1_test.csv', index = False) # 
 
 # We now do our plotting/visuals in R, but this is here in case we want quick graphs for a particular run.
 
-# plt.rc('font', family='serif')
-# plt.show()
+plt.rc('font', family='serif')
 
-# The number of ants on each trail over time
-# plt.figure()
-# for i in range(J):
-#    plt.plot(tspan, xs[:,i], label = str(i+1)) 
-# plt.title('Number of ants over time',fontsize=15)
-# plt.xlabel('Time',fontsize=15)
-# plt.ylabel('Number of ants',fontsize=15)
-# plt.legend(title='Trail', bbox_to_anchor=(1.01, 0.5), loc='center left', borderaxespad=0.)
+"""The number of ants on each trail over time"""
+plt.figure()
+for i in range(J):
+   plt.plot(tspan, solutiondata[:,i], label = str(i+1))               
+plt.title('Number of ants over time',fontsize=15)                 
+plt.xlabel('Time',fontsize=15)
+plt.ylabel('Number of ants',fontsize=15)
+plt.legend(title='Trail', bbox_to_anchor=(1.01, 0.5), loc='center left', borderaxespad=0.)
 
-# The proportion of ants committed to a trail
+"""The proportion of ants committed to a trail"""
+# I think this is the proportion of ants that are foraging, not shown by trail
 # plt.figure()
 # plt.plot(tspan, prop_committed_ants) 
 # plt.title('Proportion of committed ants',fontsize=15)
 # plt.xlabel('Time',fontsize=15)
 # plt.ylabel('Proportion',fontsize=15)
 
-# Plotting histogram of weighted average of quality
+"""Plotting histogram of weighted average of quality"""
 # plt.figure()
 # plt.bar(Q_edges, Q_hist, width = 0.5, color='#0504aa',alpha=0.7)
 # plt.title('Histogram of weighted av Q in trials',fontsize=15)
 # plt.xlabel('bins',fontsize=15)
 # plt.ylabel('weighted Q',fontsize=15)
 
-# Plotting histogram of weighted average of quality
+"""Plotting histogram of weighted average of quality"""
 # plt.figure()
 # plt.hist(weight_avg_Q, bins = 50)
 # plt.title('Histogram of weighted av Q in trials',fontsize=15)
 # plt.xlabel('weighted Q',fontsize=15)
 # plt.ylabel('count',fontsize=15)
 
-# Plotting histogram of weighted average of distance
+"""Plotting histogram of weighted average of distance"""
 # plt.figure()
 # plt.hist(weight_avg_D, bins = 50)
 # plt.title('Histogram of weighted av D in trials',fontsize=15)
 # plt.xlabel('weighted D',fontsize=15)
 # plt.ylabel('count',fontsize=15)
 
-# # Plotting Probability distribution of quality weighted average
+"""Plotting Probability distribution of quality weighted average"""
 # plt.figure()
+# Q_bins = np.arange(Qmin,Qmax+0.5,0.5)                           # note that the step needs to be added to Qmax
+# Q_hist,Q_edges = np.histogram(weight_avg_Q, bins = Q_bins)
+# Q_distr = np.zeros(len(Q_bins))     # Q distribution
+# Q_distr = Q_hist/(runs) 
 # plt.bar(Q_bins[:-1], Q_distr, width = 0.5, color='#0504aa',alpha=0.7)
 # plt.title('Distribution Weighted average of Quality',fontsize=15)
 # plt.xlabel('Weighted Average of Quality',fontsize=15)
 # plt.ylabel('Probability',fontsize=15)
 
-# # Plotting Probability distribution of distance weighted average
+"""Plotting Probability distribution of distance weighted average"""
 # plt.figure()
 # plt.bar(D_bins[:-1], D_distr, width = 0.01, color='#0504aa',alpha=0.7)
 # plt.title('Distribution Weighted average of Distance',fontsize=15)
 # plt.xlabel('Weighted Average of Distance',fontsize=15)
 # plt.ylabel('Probability',fontsize=15)
 
-# #plt.show()
+plt.show()
+
+#=================================================================================================#
+
+# EXTRA CODE
+
+# We currently don't need to use the jacobian, but Miguel spent a lot of time making it
+# so it lives here for safekeeping
+def jacobian(x,t,Q,D,betaB,betaS):
+    jac_matrix = np.zeros([J,J]) 
+    for i in range(J):
+        for j in range(J):
+            if i == j:
+                jac_matrix[i,i] = ((gamma2/D[i])*betaB[i]*x[i]*(N-sum(x))) - (alpha* np.exp(-gamma1*D[i])) - ((gamma2/D[i])*betaB[i]*x[i]) -  (gamma3/D[i])*betaS[i]*((s*D[i])/(K+((gamma3/D[i])*betaS[i]*x[i]) )**2 ) + ((s*D[i])/  (K+ (gamma3/D[i])*betaS[i]*x[i])  )                         
+            else:
+                jac_matrix[i,j] = - ( (alpha* np.exp(-gamma1*D[i])) + ((gamma2/D[i])*betaB[i]*x[i]) )
+    return jac_matrix
