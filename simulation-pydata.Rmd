@@ -23,7 +23,7 @@ library(ggplot2)
 
 # IMPORT WEIGHTED AVERAGES DF
 # ❗️🐝 Change name to your CSV filename. Make sure it's in the same directory as this RMD❗❗️
-wavg_df <- read.csv("gamma23_df_feb1_test.csv")
+wavg_df <- read.csv("2-sweep-test.csv")
 
 #head(param_df)
 #View(param_df)
@@ -73,18 +73,18 @@ This chunk creates a heatmap showing the average weighted quality and average we
 
 ```{r heatmap TWO params, fig.height = 2.5, fig.width = 6}
 
-wavg_df <- wavg_df %>% filter(Param1.Values > 0 & Param2.Values >0)
+wavg_df <- wavg_df %>% filter(ParamA.Values > 0 & ParamB.Values >0)
 
-View(wavg_df)
-wavg_means <- wavg_df %>% group_by(Param1.Values, Param2.Values) %>%
+#View(wavg_df)
+wavg_means <- wavg_df %>% group_by(ParamA.Values, ParamB.Values) %>%
   summarize(WeightedQ = mean(WeightedQ),
             WeightedD = mean(WeightedD))
-View(wavg_means)
+#View(wavg_means)
 
-wQ_heat <- ggplot(wavg_means, aes(Param1.Values, Param2.Values, fill= WeightedQ)) +
+wQ_heat <- ggplot(wavg_means, aes(ParamA.Values, ParamB.Values, fill= WeightedQ)) +
   geom_tile() + xlab("Gamma 2") + ylab("Gamma 3")
 
-wD_heat <- ggplot(wavg_means, aes(Param1.Values, Param2.Values, fill= WeightedD)) +
+wD_heat <- ggplot(wavg_means, aes(ParamA.Values, ParamB.Values, fill= WeightedD)) +
   geom_tile() + xlab("Gamma 2") + ylab("Gamma 3")
 
 require(gridExtra)
@@ -92,12 +92,12 @@ grid.arrange(wQ_heat, wD_heat, ncol=2)
 ```
 
 ```{r best fit correlogram, fig.height = 7, fig.width = 7}
-ggplot(wavg_df, aes(x=WeightedQ, y = WeightedD)) + facet_grid(rows = vars(Param2.Values), cols = vars(Param1.Values)) + geom_smooth(method=lm, se=TRUE) + xlab ("X Axis: Weighted Average of Quality; Facet: Param 1 values") + ylab ("Y Axis: Weighted Average of Distance; Facet: Param 2 values")
+ggplot(wavg_df, aes(x=WeightedQ, y = WeightedD)) + facet_grid(rows = vars(ParamB.Values), cols = vars(ParamA.Values)) + geom_smooth(method=lm, se=TRUE) + xlab ("X Axis: Weighted Average of Quality; Facet: Param 1 values") + ylab ("Y Axis: Weighted Average of Distance; Facet: Param 2 values")
 
 # best fit density plot
 # has blue plot of weighted avg of quality and distance, color depends on how many points there
 # with red best fit line
-ggplot(wavg_df, aes(x=WeightedQ, y = WeightedD)) + facet_grid(rows = vars(Param2.Values), cols = vars(Param1.Values)) + xlab ("X Axis: Weighted Average of Quality; Facet: Param 1 values") + ylab ("Y Axis: Weighted Average of Distance; Facet: Param 2 values") +stat_density_2d(aes(fill = ..density..), geom = "raster", contour = FALSE) +
+ggplot(wavg_df, aes(x=WeightedQ, y = WeightedD)) + facet_grid(rows = vars(ParamB.Values), cols = vars(ParamA.Values)) + xlab ("X Axis: Weighted Average of Quality; Facet: Param 1 values") + ylab ("Y Axis: Weighted Average of Distance; Facet: Param 2 values") +stat_density_2d(aes(fill = ..density..), geom = "raster", contour = FALSE) +
   scale_x_continuous(expand = c(0, 0)) +
   scale_y_continuous(expand = c(0, 0)) +
   theme(
@@ -106,37 +106,38 @@ ggplot(wavg_df, aes(x=WeightedQ, y = WeightedD)) + facet_grid(rows = vars(Param2
 ```
 
 These are some histograms for 2-parameter sweeps looking at the weighted averages of quality and distance over a set of one parameter's values. Note that when we look at a particular parameter 1 value here, we're combining the data from various parameter 2 values. It definitely isn't an ideal way of visualizing this info, but I wanted a way of seeing how "strong" the differences are over a set of parameter values, regardless of where in the range we provided the other param we were sweeping was. That could help us see if one parameter is able to "overpower" another and redefine the foraging behavior of the ants without the other parameter's help.
+We sometimes see a pile-up at zero because beyond a certain distance (determined by gamma 1), the ants don't venture out far enough to discover any of the resources. So, the average quality and distance of the resources is zero.
 ```{r histograms, fig.height = 7, fig.width = 7}
 # ⚠️ Note that these plots are summed over the values of the other parameter
-# To undo this, use %>% filter(Param2.Values == 1)) or equivalent
+# To undo this, use %>% filter(ParamB.Values == 1)) or equivalent
 # for some value of the parameter that was tested
 
 # PARAM 1 HISTOGRAMS
 wQprob_hist1 <- ggplot(data = wavg_df) +
-  geom_histogram(mapping = aes(x = WeightedQ, y = ..density..), binwidth = 1)+ facet_grid(rows = vars(Param1.Values))+labs (title = "Parameter 1 Quality Weighted Avg")
+  geom_histogram(mapping = aes(x = WeightedQ, y = ..density..), binwidth = 1)+ facet_grid(rows = vars(ParamA.Values))+labs (title = "Parameter 1 Quality Weighted Avg")
 
 wDprob_hist1 <- ggplot(data = wavg_df) +
-  geom_histogram(mapping = aes(x = WeightedD, y = ..density..), binwidth = .01)+ facet_grid(rows = vars(Param1.Values)) +labs (title = "Parameter 1 Distance Weighted Avg")
+  geom_histogram(mapping = aes(x = WeightedD, y = ..density..), binwidth = .01)+ facet_grid(rows = vars(ParamA.Values)) +labs (title = "Parameter 1 Distance Weighted Avg")
 
 # PARAM 2 HISTOGRAMS
 wQprob_hist2 <- ggplot(data = wavg_df) +
-  geom_histogram(mapping = aes(x = WeightedQ, y = ..density..), binwidth = 1)+ facet_grid(rows = vars(Param2.Values))+labs (title = "Parameter 2 Quality Weighted Avg")
+  geom_histogram(mapping = aes(x = WeightedQ, y = ..density..), binwidth = 1)+ facet_grid(rows = vars(ParamB.Values))+labs (title = "Parameter 2 Quality Weighted Avg")
 
 wDprob_hist2 <- ggplot(data = wavg_df) +
-  geom_histogram(mapping = aes(x = WeightedD, y = ..density..), binwidth = .01)+ facet_grid(rows = vars(Param2.Values)) +labs (title = "Parameter 2 Distance Weighted Avg")
+  geom_histogram(mapping = aes(x = WeightedD, y = ..density..), binwidth = .01)+ facet_grid(rows = vars(ParamB.Values)) +labs (title = "Parameter 2 Distance Weighted Avg")
 
 grid.arrange(wQprob_hist1, wDprob_hist1, wQprob_hist2, wDprob_hist2, ncol=2)
 
 #⚠️ Note that these plots are summed over the values of the other parameter
 
 #PARAM 1 BOX PLOTS
-wQ_box1 <- ggplot(wavg_df, aes(x= as.factor(Param1.Values), y=WeightedQ)) + geom_boxplot(fill="slateblue", alpha=0.2) + xlab ("Param 1")
+wQ_box1 <- ggplot(wavg_df, aes(x= as.factor(ParamA.Values), y=WeightedQ)) + geom_boxplot(fill="slateblue", alpha=0.2) + xlab ("Param 1")
 
-wD_box1 <- ggplot(wavg_df, aes(x= as.factor(Param1.Values), y=WeightedD)) + geom_boxplot(fill="slateblue", alpha=0.2)+ xlab ("Param 1")
+wD_box1 <- ggplot(wavg_df, aes(x= as.factor(ParamA.Values), y=WeightedD)) + geom_boxplot(fill="slateblue", alpha=0.2)+ xlab ("Param 1")
 
-wQ_box2 <- ggplot(wavg_df, aes(x= as.factor(Param2.Values), y=WeightedQ)) + geom_boxplot(fill="slateblue", alpha=0.2) + xlab ("Param 2")
+wQ_box2 <- ggplot(wavg_df, aes(x= as.factor(ParamB.Values), y=WeightedQ)) + geom_boxplot(fill="slateblue", alpha=0.2) + xlab ("Param 2")
 
-wD_box2 <- ggplot(wavg_df, aes(x= as.factor(Param2.Values), y=WeightedD)) + geom_boxplot(fill="slateblue", alpha=0.2)+ xlab ("Param 2")
+wD_box2 <- ggplot(wavg_df, aes(x= as.factor(ParamB.Values), y=WeightedD)) + geom_boxplot(fill="slateblue", alpha=0.2)+ xlab ("Param 2")
 
 grid.arrange(wQ_box1, wD_box1,wQ_box2, wD_box2, ncol=2, nrow=2)
 ```
@@ -153,10 +154,10 @@ The below graphs show histograms of the difference of averages for quality and d
 # Python: dif_btwn_avgs_D[w] = weight_avg_D[w] - avg_D[w]   # negative difference- picking better than environment
 
 difQplot <- ggplot(data = wavg_df) +
-  geom_histogram(mapping = aes(x = Dif.Avgs.Q, y = ..density..), binwidth = 1)+ facet_grid(rows = vars(Param1.Values), cols = vars(Param2.Values))+labs (title = "Difference = Weighted Avg Quality — Avg Quality") + xlab("Gamma 2")+ ylab("Gamma 3") + geom_vline(xintercept = 0, color = "red", size=0.5)
+  geom_histogram(mapping = aes(x = Dif.Avgs.Q, y = ..density..), binwidth = 1)+ facet_grid(rows = vars(ParamA.Values), cols = vars(ParamB.Values))+labs (title = "Difference = Weighted Avg Quality — Avg Quality") + xlab("Gamma 2")+ ylab("Gamma 3") + geom_vline(xintercept = 0, color = "red", size=0.5)
 
 difDplot <- ggplot(data = wavg_df) +
-  geom_histogram(mapping = aes(x = Dif.Avgs.D, y = ..density..), binwidth = .02)+ facet_grid(rows = vars(Param1.Values), cols = vars(Param2.Values))+labs (title = "Difference = Weighted Avg Dist - Avg Dist") + xlab("Gamma 2")+ ylab("Gamma 3") + geom_vline(xintercept = 0, color = "red", size=0.5)
+  geom_histogram(mapping = aes(x = Dif.Avgs.D, y = ..density..), binwidth = .02)+ facet_grid(rows = vars(ParamA.Values), cols = vars(ParamB.Values))+labs (title = "Difference = Weighted Avg Dist - Avg Dist") + xlab("Gamma 2")+ ylab("Gamma 3") + geom_vline(xintercept = 0, color = "red", size=0.5)
 
 grid.arrange(difQplot, difDplot, ncol=2)
 
