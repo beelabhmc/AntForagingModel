@@ -116,8 +116,8 @@ for t in range(len(tspan)):
 # SWEEPING ONE PARAMETER
 
 """
-param            = np.linspace(9,15,3)        # (start, stop, # samples). Creates array of param values to test.
-all_params_names.append("gamma1")             # ⬅️❗️🐝 Update to match which params you're sweeping 🐝❗️
+param            = np.linspace(0,0.1,5)       # (start, stop, # samples). Creates array of param values to test.
+all_params_names.append("gamma3")             # ⬅️❗️🐝 Update to match which params you're sweeping 🐝❗️
 all_params_vals.append(param)                 # Records what param values are being tested in the paramdf
 
 param_values     = []                         # specifies which value's used for param during each chunk of sim runs. used in df.
@@ -126,53 +126,54 @@ weight_avg_D_tot = []
 dif_btwn_avgs_Q_tot = []
 dif_btwn_avgs_D_tot = []
 for p in range(len(param)):                   # for each value of param...
-    gamma1 = param[p]                         # ⬅️❗️🐝 Update to match which params you're sweeping 🐝❗️
+    gamma3 = param[p]                         # ⬅️❗️🐝 Update to match which params you're sweeping 🐝❗️
     simulation()
     param_values += ([param[p]] * runs)       # add param value (once for each run) to list of param values
     weight_avg_Q_tot += list(weight_avg_Q)    # add onto list of quality weighted averages with values for this set of runs
     weight_avg_D_tot += list(weight_avg_D)
     dif_btwn_avgs_Q_tot += list(dif_btwn_avgs_Q)
     dif_btwn_avgs_D_tot += list(dif_btwn_avgs_D)
-"""
+# """
 
 #===============================#
 
 # SWEEPING TWO PARAMETERS
 
-"""
+# """
 #                 (start, stop, number of terms)
-param1           = np.linspace(0.0000001,0.1,5)         # ⚠️ Make sure that param1 and param2 have the same number elements in this array!
-param2           = np.linspace(0.0000001,0.1,5)         # You can also use np.arrange for (start, stop, step)
+paramA           = np.linspace(5.814424e-06,5.814424e-06,5)         # ⚠️ Make sure that paramA and paramB have the same number elements in this array!
+paramB           = np.linspace(0.0000001,0.1,5)         # You can also use np.arrange for (start, stop, step)
 
 all_params_names.extend(["gamma2", "gamma3"])     # ⬅️❗️⚠️ Update to match which params you're sweeping ⚠️❗️
-all_params_vals.extend([param1, param2])          # Records what param values are being tested in the paramdf
+all_params_vals.extend([paramA, paramB])          # Records what param values are being tested in the paramdf
 
-param1_values    = []   
-param2_values    = []                           # specifies which value's used for param during each chunk of sim runs. used in df.
+paramA_values    = []   
+paramB_values    = []                           # specifies which value's used for param during each chunk of sim runs. used in df.
 weight_avg_Q_tot = []                           # list of all the Q weighted avg values from all sim for all tested values of param
 weight_avg_D_tot = []
 dif_btwn_avgs_Q_tot = []
 dif_btwn_avgs_D_tot = []
-for p in range(len(param1)):                    # for each value of param1... note- (len(param1) = len(param2))                         
-    for q in range(len(param2)):
-        print(int(np.floor(p*100/len(param2))), "% 🐜") # Progress bar 
-        gamma2 = param1[p]                      # ⬅️❗️⚠️ Specify the first param you want to sweep  ⚠️❗️
-        gamma3 = param2[q]                      # ⬅️❗️⚠️ Specify the second param you want to sweep ⚠️❗️
+for p in range(len(paramA)):                    # for each value of paramA... note- (len(paramA) = len(paramB))                         
+    for q in range(len(paramB)):
+        print(int(np.floor(p*100/len(paramB))), "% 🐜") # Progress bar 
+        gamma2 = paramA[p]                      # ⬅️❗️⚠️ Specify the first param you want to sweep  ⚠️❗️
+        gamma3 = paramB[q]                      # ⬅️❗️⚠️ Specify the second param you want to sweep ⚠️❗️
         simulation()  
-        param1_values += ([param1[p]] * runs)   # add param1 value (once for each run) to list of param values
-        param2_values += ([param2[q]] * runs)  
+        paramA_values += ([paramA[p]] * runs)   # add paramA value (once for each run) to list of param values
+        paramB_values += ([paramB[q]] * runs)  
         weight_avg_Q_tot += list(weight_avg_Q)  # add onto list of quality weighted averages with values for this set of runs
         weight_avg_D_tot += list(weight_avg_D)
         dif_btwn_avgs_Q_tot += list(dif_btwn_avgs_Q)
         dif_btwn_avgs_D_tot += list(dif_btwn_avgs_D)
-"""
+# """
         
 #=================================================================================================#
 
 # CREATING CSVs FOR EXPORT
 
-solutiondf = pd.DataFrame(data=solutiondata)
-solutiondf.to_csv(r'/Users/nfn/Desktop/Ants/soln-test.csv', index = False) # Fletcher's path
+#This is the dataframe of the number of ants on each trail
+#solutiondf = pd.DataFrame(data=solutiondata)
+#solutiondf.to_csv(r'/Users/nfn/Desktop/Ants/solutions-test.csv', index = False) # Fletcher's path
 
 # Create dataframe of all of the parameters we're using in this set of runs
 # This can help us recreate graphs and recall the context of each sweep
@@ -182,7 +183,7 @@ paramdf = pd.DataFrame(data=paramd)
 
 # Export
 #❗🐝 Remember to change filename 🐝❗️#
-paramdf.to_csv(r'/Users/nfn/Desktop/Ants/params_feb1_test.csv', index = False) # Fletcher's path
+paramdf.to_csv(r'/Users/nfn/Desktop/Ants/params_2-sweep-test.csv', index = False) # Fletcher's path
 #paramdf.to_csv( INSERT PATH , index = False)                              # David's path
 
 #===========#
@@ -190,18 +191,18 @@ paramdf.to_csv(r'/Users/nfn/Desktop/Ants/params_feb1_test.csv', index = False) #
 """For parameter sweep only:"""
 
 # Create sweep's dataframe
-#❗🐝 Update to reflect which sweep you did 🐝❗️#
+#❗🐝 Update to reflect how many params you swept 🐝❗️#
 """One parameter sweep:"""
 # d = {'Param Values': param_values, 'WeightedQ': weight_avg_Q_tot,'WeightedD': weight_avg_D_tot, 'Dif Avgs Q': dif_btwn_avgs_Q_tot, 'Dif Avgs D': dif_btwn_avgs_D_tot}
 """Two parameter sweep:"""
-# d = {'Param1 Values': param1_values, 'Param2 Values': param2_values, 'WeightedQ': weight_avg_Q_tot,'WeightedD': weight_avg_D_tot, 'Dif Avgs Q': dif_btwn_avgs_Q_tot, 'Dif Avgs D': dif_btwn_avgs_D_tot}
+d = {'ParamA Values': paramA_values, 'ParamB Values': paramB_values, 'WeightedQ': weight_avg_Q_tot,'WeightedD': weight_avg_D_tot, 'Dif Avgs Q': dif_btwn_avgs_Q_tot, 'Dif Avgs D': dif_btwn_avgs_D_tot}
 """Both:"""
-# df = pd.DataFrame(data=d)
+df = pd.DataFrame(data=d)
 
 # Export
 #❗️🐝 Remember to change filename 🐝❗️#
-# df.to_csv(r'/Users/nfn/Desktop/Ants/gamma23_df_feb1_test.csv', index = False) # Fletcher's path
-#df.to_csv( INSERT PATH , index = False)                                  # David's path
+df.to_csv(r'/Users/nfn/Desktop/Ants/2-sweep-test.csv', index = False) # Fletcher's path
+# df.to_csv( INSERT PATH , index = False)                                  # David's path
 
 #=================================================================================================#
 
