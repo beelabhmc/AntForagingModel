@@ -72,7 +72,6 @@ dif_btwn_avgs_Q = np.zeros(runs)
 dif_btwn_avgs_D = np.zeros(runs)  
 prop_committed_ants    = np.zeros(len(tspan))   # Proportion of committed ants (committed =  on a trail)
 prop_noncommitted_ants = np.zeros(len(tspan))   # Proportion of non-committed ants 
-xs = np.zeros(runs)  
 
 def simulation():
     for w in range(runs):
@@ -102,7 +101,7 @@ def simulation():
 solutiondata = simulation()
 # You can remove the below 2 lines when not graphing in this file
 for t in range(len(tspan)):
-    prop_committed_ants[t]    = sum(xs[t,:]/N)
+    prop_committed_ants[t]    = sum(solutiondata[t,:]/N)
 
 #=================================================================================================#
 
