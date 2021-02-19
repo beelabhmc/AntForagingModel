@@ -99,7 +99,7 @@ def ivp_simulation():
         betaB = n1 * Q
         betaS = n2 * Q
 
-        sol = solve_ivp(rhs,[0,stop],x0,args=(D,betaB,betaS),dense_output=False, method = 'LSODA')
+        sol = solve_ivp(rhs,[start,stop],x0,args=(D,betaB,betaS), method = 'LSODA')
     return(sol)
 
 sol = ivp_simulation() #this is in a special type that gives you extra info if you print it
@@ -107,7 +107,7 @@ sol = ivp_simulation() #this is in a special type that gives you extra info if y
 # sol.y is the solutions: one row for each trail, timesteps are cols
 # this is the transpose of odeint's output
 
-print(len(sol.t))
+print( "# timesteps done: ", len(sol.t))
 print ("compare to tspan: ", len(tspan))
 
 sol_time_df = pd.DataFrame(data=sol.y)
@@ -118,10 +118,10 @@ df = sol_time_df
 df.to_csv(r'/Users/nfn/Desktop/Ants/sivp-test.csv', index = False) # Fletcher's path
 
 print("Complete! 🧁🐜 🍭🐜 🍩🐜")
-
 end_time = datetime.now()
 print('Duration: {}'.format(end_time - start_time))
 print("for ", runs, " runs on ", J, " trails.")
+print(" ")
 
 # Create a dense solution
 # t = tspan #np.linspace(0,50,1000)
