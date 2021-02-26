@@ -107,6 +107,30 @@ sol = ivp_simulation() #this is in a special type that gives you extra info if y
 # sol.y is the solutions: one row for each trail, timesteps are cols
 # this is the transpose of odeint's output
 
+def find_negatives():
+    negative_testruns = np.zeros(testruns)  
+
+    for i in range(testruns):
+        isnegative = 0
+        #print(int(np.floor(i*100/testruns)), "% 🐜") # Progress bar
+        sol = ivp_simulation()
+        # sol.y is the solutions: one row for each trail, timesteps are cols
+        # reshape array so it's just one list
+        flat_soly = list(sol.y.reshape(-1))
+        for k in flat_soly:
+            if(k<0):
+                isnegative = 1
+                break
+        negative_testruns[i] = isnegative
+
+    percent_negative = sum(negative_testruns) / testruns
+
+    print(" ")
+    print("Stop : ", stop)
+    print("Step : ", step)
+    print("Per¢ : ", int(np.ceil(percent_negative*100)), "%")
+    return(percent_negative)
+
 print( "# timesteps done: ", len(sol.t))
 print ("compare to tspan: ", len(tspan))
 
