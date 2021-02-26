@@ -92,20 +92,22 @@ def ivp_simulation():
     # the simulation on convergence. 
 
     for w in range(runs):
-        print(int(np.floor(w*100/runs)), "% 🐜") # Progress bar
+        #print(int(np.floor(w*100/runs)), "% 🐜") # Progress bar
         x0 = np.zeros(J)
         Q = np.random.uniform(Qmin,Qmax,J)      # Choose each trail's quality from uniform distribution      
         D = np.random.uniform(Dmin,Dmax,J)      # Choose each trail's distance from uniform distribution     
         betaB = n1 * Q
         betaS = n2 * Q
 
-        sol = solve_ivp(rhs,[start,stop],x0,args=(D,betaB,betaS), method = 'LSODA')
+        sol = solve_ivp(rhs,[start,stop],x0,args=(D,betaB,betaS), method = 'LSODA', t_eval = tspan)
     return(sol)
 
-sol = ivp_simulation() #this is in a special type that gives you extra info if you print it
+#sol = ivp_simulation() #this is in a special type that gives you extra info if you print it
 # sol.t is timesteps
 # sol.y is the solutions: one row for each trail, timesteps are cols
 # this is the transpose of odeint's output
+
+testruns = 20
 
 def find_negatives():
     negative_testruns = np.zeros(testruns)  
@@ -131,15 +133,17 @@ def find_negatives():
     print("Per¢ : ", int(np.ceil(percent_negative*100)), "%")
     return(percent_negative)
 
-print( "# timesteps done: ", len(sol.t))
-print ("compare to tspan: ", len(tspan))
+find_negatives()
 
-sol_time_df = pd.DataFrame(data=sol.y)
-sol_time_df = sol_time_df.transpose()       # transpose to make 1 column per trail
-sol_time_df['t'] = sol.t                    # Include timesteps as col with index j (as counting starts at 0)
+# print( "# timesteps done: ", len(sol.t))
+# print ("compare to tspan: ", len(tspan))
 
-df = sol_time_df
-df.to_csv(r'/Users/nfn/Desktop/Ants/sivp-test.csv', index = False) # Fletcher's path
+# sol_time_df = pd.DataFrame(data=sol.y)
+# sol_time_df = sol_time_df.transpose()       # transpose to make 1 column per trail
+# sol_time_df['t'] = sol.t                    # Include timesteps as col with index j (as counting starts at 0)
+
+# df = sol_time_df
+# df.to_csv(r'/Users/nfn/Desktop/Ants/sivp-test.csv', index = False) # Fletcher's path
 
 print("Complete! 🧁🐜 🍭🐜 🍩🐜")
 end_time = datetime.now()
@@ -158,6 +162,5 @@ print(" ")
 # ax.plot(t,y.T)
 
 # soldf = pd.DataFrame(data=sol)
-sol_time_df.plot(x='t')
-plt.show()
-
+# sol_time_df.plot(x='t')
+# plt.show()
