@@ -11,7 +11,7 @@ import sys
 
 # PARAMETERS 
 
-runs   = 5             # How many times we run the simulation
+runs   = 1             # How many times we run the simulation
 J      = 5               # Number of food sources (aka, number of trails to food sources)
 N      = 5000            # Total number of ants
 alpha  = 9.170414e+01    # Per capita rate of spontaneous discoveries
@@ -67,9 +67,8 @@ def dx_dt(x,t,Q,D,betaB,betaS):
     return system
 
 def rhs(t,x,D,betaB,betaS):
-    #print(x)
-    #return [(alpha * np.exp(-gamma1*D) + (gamma2/D)*betaB[i]*x[i])*(N-sum(x)) - (s*D*x[i])/(K+ (gamma3/D)*betaS[i]*x[i]) for i in range(J)]
-    return [(alpha * np.exp(-gamma1*D) + (gamma2/D)*betaB*x)*(N-sum(x)) - (s*D*x)/(K+ (gamma3/D)*betaS*x)]
+    dx = (alpha * np.exp(-gamma1*D) + (gamma2/D)*betaB*x)*(N-sum(x)) - (s*D*x)/(K+ (gamma3/D)*betaS*x)
+    return [d if d > 0 else 0 for d in dx] # set the floor of the output to 0
 
 
 def jacobian(x,t,Q,D,betaB,betaS):
@@ -95,26 +94,68 @@ dif_btwn_avgs_D = np.zeros(runs)
 prop_committed_ants    = np.zeros(len(tspan))   # Proportion of committed ants (committed =  on a trail)
 prop_noncommitted_ants = np.zeros(len(tspan))   # Proportion of non-committed ants 
 
-x0 = np.zeros(J)
-Q = np.random.uniform(Qmin,Qmax,J)      # Choose each trail's quality from uniform distribution      
-D = np.random.uniform(Dmin,Dmax,J)      # Choose each trail's distance from uniform distribution     
-betaB = n1 * Q
-betaS = n2 * Q
 
-# This version is a test that uses SciPy solve_ivp instead of odeint
-# with the eventual goal of using solve_ivp's event detector to stop
-# the simulation on convergence. 
-sol = solve_ivp(rhs,[0,52],x0,args=(D,betaB,betaS),dense_output=True)
+def ivp_simulation():
+    # This version is a test that uses SciPy solve_ivp instead of odeint
+    # with the eventual goal of using solve_ivp's event detector to stop
+    # the simulation on convergence. 
+
+    for w in range(runs):
+        print(int(np.floor(w*100/runs)), "% 🐜") # Progress bar
+        x0 = np.zeros(J)
+        Q = np.random.uniform(Qmin,Qmax,J)      # Choose each trail's quality from uniform distribution      
+        D = np.random.uniform(Dmin,Dmax,J)      # Choose each trail's distance from uniform distribution     
+        betaB = n1 * Q
+        betaS = n2 * Q
+
+        sol = solve_ivp(rhs,[start,stop],x0,args=(D,betaB,betaS),dense='true', method = 'LSODA')
+    return(sol,[list(Q),list(D)])
+
+sol,initials = ivp_simulation() #this is in a special type that gives you extra info if you print it
+# sol.t is timesteps
+# sol.y is the solutions: one row for each trail, timesteps are cols
+# this is the transpose of odeint's output
+
+testruns = 100
+
+def find_negatives():
+    negative_testruns = np.zeros(testruns)  
+    negative_ics = []
+    for i in range(testruns):
+        isnegative = 0
+        #print(int(np.floor(i*100/testruns)), "% 🐜") # Progress bar
+        sol,ic_list = ivp_simulation()
+        # sol.y is the solutions: one row for each trail, timesteps are cols
+        # reshape array so it's just one list
+        flat_soly = list(sol.y.reshape(-1))
+        for k in flat_soly:
+            if(k<0):
+                isnegative = 1
+                negative_ics.append(ic_list)
+                break
+        negative_testruns[i] = isnegative
+    percent_negative = sum(negative_testruns) / testruns
+
+    print(" ")
+    print("Stop : ", stop)
+    print("Step : ", step)
+    print("Per¢ : ", int(np.ceil(percent_negative*100)), "%")
+    return(percent_negative,negative_ics)
 
 #print(len(sol.t))
 #print(len(sol.y))
 
+#print(find_negatives())
+negPercent,negICs = find_negatives()
 # Create a dense solution
-t = np.linspace(0,50,1000)
-y = sol.sol(t)
+#t = np.linspace(0,50,1000)
+#y = sol.sol(t)
 
 # Visualize
+qspace = [x[0] for x in negICs]
+dspace = [x[1] for x in negICs]
 ax = plt.subplot()
-ax.set(xlabel='t')
-ax.plot(t,y.T)
+ax.set(xlabel='Q',ylabel='D')
+#ax.plot(t,y.T)
+ax.scatter(qspace,dspace)
 plt.show()
