@@ -11,7 +11,7 @@ options = odeset('NonNegative',1);
 
 %       ode23s runs but does not have non-negative ability
 
-plot(t,y(:,1),'-o',t,y(:,2),'-.', y(:,3),'--',y(:,4),'-x',y(:,5),'-*')
+plot(t,y(:,1),'-o',t,y(:,2),'-.',t, y(:,3),'--',t,y(:,4),'-x',t,y(:,5),'-*')
 % Error: "Data must be a single input of y-values or one or more pairs of
 % x- and y-values."
 
