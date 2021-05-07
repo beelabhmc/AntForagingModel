@@ -9,7 +9,130 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(ggplot2)
+library(ggExtra)
+library(viridis)
+library(RColorBrewer)
+library(scico)
+
 ```
+
+```{r convdata FACET fig.height = 12, fig.width = 12}
+convdf <- read.csv("10-2-gamma1-alpha_facet_QDST.csv")
+#if it doesn't want to read it, put a space after the first "
+View(convdf)
+# Specify which path is chosen
+convdf <- convdf %>% mutate(
+  Favored = colnames(convdf %>% select(Final.Ants.1, Final.Ants.2))[max.col(convdf %>% select(Final.Ants.1, Final.Ants.2),ties.method="first")]
+)
+convdf <- convdf %>% mutate(
+  Favored = as.integer(substr(Favored,nchar(Favored), nchar(Favored))), 
+  Q.Favored = Q1 *(Favored ==1) + Q2 * (Favored ==2), 
+  Q.Disfavored = Q1 *(Favored ==2) + Q2 * (Favored ==1), 
+  D.Favored = D1 *(Favored ==1) + D2 * (Favored ==2), 
+  D.Disfavored = D1 *(Favored ==2) + D2 * (Favored ==1), 
+  Ants.Favored = Final.Ants.1 *(Favored ==1) + Final.Ants.2 * (Favored ==2), 
+  Ants.Disfavored = Final.Ants.1 *(Favored ==2) + Final.Ants.2 * (Favored ==1), 
+  )
+
+convdf <- convdf %>% select (Convergence.Time, Q.Favored, Q.Disfavored, D.Favored, D.Disfavored, Ants.Favored, Ants.Disfavored, gamma1, alpha) # CHANGE FOR PARAMS :3
+
+
+round_any = function(x, accuracy, f=round){f(x/ accuracy) * accuracy}
+
+convDifference <- convdf %>% mutate(
+  Dif.Q = Q.Favored- Q.Disfavored, 
+  Dif.D = D.Favored- D.Disfavored,
+  Dif.Ants = Ants.Favored- Ants.Disfavored,
+  Rounded.Dif.Ants = round_any(Dif.Ants, 1000))
+
+#View (convDifference)
+
+p1<- ggplot(convDifference, aes(x= Dif.D, y = Dif.Q, color = Convergence.Time)) + 
+    geom_point(size=1) + ggtitle("Tradeoffs between two resources") + ylab("Difference in Quality") +xlab("Difference in Distance") + facet_grid( gamma1 ~ alpha, labeller = label_both)  # :3
+
+# reg<-lm(dist ~ speed, data = cars)
+# abline(reg, col="blue")
+
+
+p2<- ggplot(convDifference %>% filter (Convergence.Time>= 40), aes(x= Dif.D, y = Dif.Q, color = Convergence.Time)) + 
+    geom_point(size=1) + ggtitle("Runs with a Convergence Time of 40-50") + ylab("Difference in Quality") +xlab("Difference in Distance") + facet_grid( gamma1 ~ alpha, labeller = label_both) + geom_hline(yintercept=0)+ geom_vline(xintercept=0)
+
+# add for axes:
+# + geom_hline(yintercept=0)+ geom_vline(xintercept=0)
+
+ggplot(convDifference, aes(x= Convergence.Time, y = Dif.Q, color = Dif.D)) + 
+     geom_point(size=0.7, alpha = 0.7) + ggtitle("Convergence time and Difference in Quality") + ylab("Difference in Quality") +xlab("Convergence time") + facet_grid( gamma1 ~ alpha, labeller = label_both) + geom_hline(yintercept=0, colour = "black") + scale_color_scico(palette = 'vikO', limits = c(-1, 1) * max(abs(convDifference$Dif.D))) + theme_minimal()
+
+ggplot(convDifference, aes(x= Convergence.Time, y = Dif.D, color = Dif.Q)) + 
+     geom_point(size=0.7, alpha = 0.7) + ggtitle("Convergence time and Difference in Distance") + ylab("Difference in Distance") +xlab("Convergence time") + facet_grid( gamma1 ~ alpha, labeller = label_both) + geom_hline(yintercept=0, colour = "black") + scale_color_scico(palette = 'vikO', limits = c(-1, 1) * max(abs(convDifference$Dif.Q))) + theme_minimal()
+```
+
+
+```{r conv time data}
+convdf <- read.csv(" tenth_gamma1_2trail_conv_vals_QDST.csv")
+#if it doesn't want to read it, put a space after the first "
+
+# Specify which path is chosen
+convdf <- convdf %>% mutate(
+  Favored = colnames(convdf %>% select(Final.Ants.1, Final.Ants.2))[max.col(convdf %>% select(Final.Ants.1, Final.Ants.2),ties.method="first")]
+)
+convdf <- convdf %>% mutate(
+  Favored = as.integer(substr(Favored,nchar(Favored), nchar(Favored))), 
+  Q.Favored = Q1 *(Favored ==1) + Q2 * (Favored ==2), 
+  Q.Disfavored = Q1 *(Favored ==2) + Q2 * (Favored ==1), 
+  D.Favored = D1 *(Favored ==1) + D2 * (Favored ==2), 
+  D.Disfavored = D1 *(Favored ==2) + D2 * (Favored ==1), 
+  Ants.Favored = Final.Ants.1 *(Favored ==1) + Final.Ants.2 * (Favored ==2), 
+  Ants.Disfavored = Final.Ants.1 *(Favored ==2) + Final.Ants.2 * (Favored ==1), 
+  )
+
+convdf <- convdf %>% select (Convergence.Time, Q.Favored, Q.Disfavored, D.Favored, D.Disfavored, Ants.Favored, Ants.Disfavored)
+#View(convdf)
+
+round_any = function(x, accuracy, f=round){f(x/ accuracy) * accuracy}
+
+convDifference <- convdf %>% mutate(
+  Dif.Q = Q.Favored- Q.Disfavored, 
+  Dif.D = D.Favored- D.Disfavored,
+  Dif.Ants = Ants.Favored- Ants.Disfavored,
+  Rounded.Dif.Ants = round_any(Dif.Ants, 1000))
+p1<- ggplot(convDifference, aes(x= Dif.D, y = Dif.Q, color = Convergence.Time)) + 
+    geom_point(size=1) + ggtitle("Tradeoffs between two resources") + xlab("Dif in D btwn favored and disfavored source") +ylab("Dif in Q btwn favored and disfavored source")
+p1m <- ggMarginal(p1, type="histogram", size=10)
+#p1
+p1m
+
+# density plot
+ggplot(convDifference, aes(x= Dif.D, y = Dif.Q) ) +
+ stat_density_2d(aes(fill = ..level..), geom = "polygon", colour="white")+ ggtitle("Density plot of differences of Q, D btwn two sources") + xlab("Dif in D btwn favored and disfavored source") +ylab("Dif in Q btwn favored and disfavored source")
+
+p2 <- ggplot(convDifference, aes(x= Dif.D, y = Dif.Q, color = Dif.Ants)) + 
+    geom_point(size=1) + ggtitle("Tradeoffs between two resources") + xlab("Dif in D btwn favored and disfavored source") +ylab("Dif in Q btwn favored and disfavored source")
+#p2
+
+p3<- ggplot(convDifference, aes(x= Dif.D, y = Dif.Q, color = Convergence.Time)) + 
+    geom_point(size=1) + ggtitle("Tradeoffs: difference in ants rounded to nearest 1000") + xlab("Dif in D btwn favored and disfavored source") +ylab("Dif in Q btwn favored and disfavored source") + facet_wrap(~Rounded.Dif.Ants)
+p3
+
+p4<- ggplot(convDifference %>% filter (Convergence.Time>35), aes(x= Dif.D, y = Dif.Q, color = Convergence.Time)) + 
+    geom_point(size=1) + ggtitle("Tradeoffs: difference in ants rounded to nearest 1000") + xlab("Dif in D btwn favored and disfavored source") +ylab("Dif in Q btwn favored and disfavored source") + facet_wrap(~Rounded.Dif.Ants)
+#p4
+```
+
+```{r conv time visuals old}
+convdf <- read.csv("2trail_conv_vals_QDST.csv")
+
+convdf <- convdf %>% mutate(Dif.Q = abs(Q1 - Q2), Dif.D = abs(D1 - D2))
+ggplot(convdf, aes(x= Dif.D, y = Dif.Q, color = Convergence.Time)) + 
+    geom_point(size=1) + ggtitle("Convergence times in 2-resource simulations") +xlab("Difference in sources' distances") +ylab("Difference in sources' qualities")
+head(convdf)
+# tidyconv <- conv_df %>% pivot_longer(c('Q1', 'Q2'), names_to = "Source", values_to = "Quality")
+# tidyconv <- tidyconv %>% pivot_longer(c('D1', 'D2'), names_to = "Source", values_to = "Distance")
+# head(tidyconv)
+#ggplot(conv_df, aes(x = ))
+
+```
+
 
 ```{r Import csvs}
 # Make sure that the CSVs have been saved to the same location as this RMD
