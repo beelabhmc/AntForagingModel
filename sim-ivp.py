@@ -2,7 +2,6 @@ from numpy.lib.shape_base import dstack
 from numpy.lib.ufunclike import _dispatcher
 import scipy as sc
 import numpy as np
-import pandas as pd
 from scipy.integrate import odeint
 from scipy.integrate import solve_ivp
 import scipy.stats as stat
@@ -10,6 +9,7 @@ import matplotlib.pyplot as plt
 import sys
 from tqdm import tqdm
 from matplotlib.pyplot import get_cmap
+from matplotlib import cm
 #np.set_printoptions(threshold=sys.maxsize) # This allows to you to print large arrays without truncating them
 
 #=================================================================================================#
@@ -21,11 +21,14 @@ J      = 5               # Number of food sources (aka, number of trails to food
 N      = 5000            # Total number of ants
 alpha  = 9.170414e+01    # Per capita rate of spontaneous discoveries
 s      = 8.124702e+01    # Per capita rate of ant leaving trail per distance
+#s      = 4.124702e+01    # Per capita rate of ant leaving trail per distance
 gamma1 = 1.186721e+01    # Range of foraging scouts
 gamma2 = 5.814424e-06    # Range of recruitment activity 
 gamma3 = 1.918047e-03    # Range of influence of pheromone 
+#gamma3 = 4.66e-03
 K      = 8.126483e-03    # Inertial effects that may affect pheromones 
-n1     = 1.202239e+00    # Individual ant's contribution to rate of recruitment (orig. eta1)
+#n1     = 1.202239e+00    # Individual ant's contribution to rate of recruitment (orig. eta1)
+n1     = 1.202239e-01   # Individual ant's contribution to rate of recruitment (orig. eta1)
 n2     = 9.902102e-01    # Pheromone strength of trail (originally eta2)
 
 Qmin = 0                 # Minimum & Maximum of Quality uniform distribution
@@ -33,6 +36,7 @@ Qmax = 20
 Dmin = 0                 # Minimum & Maximum of Distance uniform distribution
 #Dmax = 0.5
 Dmax = 1
+#Dmax = 3
 
 betaB  = np.zeros(J)     # How much each ant contributes to recruitment to a trail
 betaS  = np.zeros(J)     # Relationship btwn pheromone strength of a trail & its quality
@@ -129,7 +133,6 @@ sol = ivp_simulation() #this is in a special type that gives you extra info if y
 # sol.y is the solutions: one row for each trail, timesteps are cols
 # this is the transpose of odeint's output
 
-testruns = 1000
 
 def find_negatives():
     negative_testruns = np.zeros(testruns)  
@@ -153,6 +156,8 @@ def find_negatives():
     print("Per¢ : ", int(np.ceil(percent_negative*100)), "%")
     return(percent_negative)
 
+def sortFirst(val):
+    return val[0]
 def qd_convergence_comparison(numIter):
     qs = np.zeros([J,testruns])
     ds = np.zeros([J,testruns])
@@ -164,13 +169,13 @@ def qd_convergence_comparison(numIter):
         sol,qdArray,conTime = ivp_simulation()
         qdArray[0] = stat.zscore(qdArray[0])
         qdArray[1] = stat.zscore(qdArray[1])
-        
-
-        end = list(sol.y[:,-1])
-        trailChoice = end.index(max(end))
-
-
-        finalVals.append(end.index(max(end)))
+        qs[:,i] = qdArray[0]
+        ds[:,i] = qdArray[1]
+        final = list(sol.y[:,-1])
+        end = [[x,final.index(x)] for x in final]
+        end.sort(key=sortFirst,reverse=True)
+        topTwoTrails = [end[0],end[1]]
+        finalVals.append(topTwoTrails)
         timeToConverge.append(conTime)
     print("done!")
     return qs,ds,timeToConverge,finalVals
@@ -189,25 +194,49 @@ def qd_convergence_comparison(numIter):
 #convergence_time = sol.t_events[-1]
 #print(convergence_time)
 #y = sol.sol(t)
+testruns = 1000
 
 qspace,dspace,Ts,fV = qd_convergence_comparison(testruns)
+#qspace,dspace,Ts = qd_convergence_comparison(testruns)
 
-
-print(fV)
+#print(fV)
 #print(Ts)
 #print(qspace)
 # Visualize
 #qspace = [x[0] for x in negICs]
 #dspace = [x[1] for x in negICs]
-ax = plt.subplot()
+ax = plt.subplot(1,4,(1,3))
+ax2 = plt.subplot(1,4,4)
+gradient = np.linspace(0, 1, 256)
+#gradient = np.column_stack((np.flip(gradient), np.flip(gradient)))
+gradient = np.column_stack((gradient,gradient))
+#gradient = np.column_stack(gradient, gradient)
+
+ax2.imshow(gradient, aspect='auto', cmap=plt.get_cmap('viridis'))
+ax2.get_xaxis().set_visible(False)
+#ax2.set_axis_off()
 ax.set(xlabel='Quality (z-score)',ylabel='Distance (z-score)')
-ax.set(title="Relative quality/distance of chosen food source vs. convergence time")
+ax.set(title="Best pair of resources out of 5 trails, decreasing n1")
+plt.title('Convergence time')
+def connectpoints(x,y,p1,p2):
+    x1, x2 = x[p1], x[p2]
+    y1, y2 = y[p1], y[p2]
+    ax.plot([x1,x2],[y1,y2],'k-')
+
 # color = [[str(t/255.) for _ in range(J)] for t in Ts] # plot all q and d
-color = [str(t/255.) for t in Ts] # plot only max val's q and d
+#color = [str(t/255.) for t in Ts] # plot only max val's q and d
+color = [t/255. for t in Ts] # plot only max val's q and d
+size = 10
+alpha = [min(0.25+x*(1.33/max(color)),0.999) for x in color]
 for i in range(testruns):
     #ax.scatter(qspace[:,i],dspace[:,i],c=color[i],cmap='viridis')
     plt.set_cmap('viridis')
-    ax.scatter(qspace[fV[i],i],dspace[fV[i],i],c=color[i],s=5)
+    #ax.scatter(qspace[fV[i],i],dspace[fV[i],i],c=color[i],s=5,marker='o')
+    #ax.scatter(qspace[0,i],dspace[0,i],c=color[i],s=10)
+    ax.scatter(qspace[fV[i][0][1],i],dspace[fV[i][0][1],i],color=cm.viridis(color[i]),s=size)
+    ax.scatter(qspace[fV[i][1][1],i],dspace[fV[i][1][1],i],color=cm.viridis(color[i]),s=size)
+    ax.plot([qspace[fV[i][0][1],i],qspace[fV[i][1][1],i]],[dspace[fV[i][0][1],i],dspace[fV[i][1][1],i]],color=cm.viridis(color[i]),alpha=alpha[i])
+    #ax.plot([x1,x2],[y1,y2],etc)
 #plt.colorbar(mappable=color)
 '''
 ax.set(xlabel='t',ylabel='Number of ants')
