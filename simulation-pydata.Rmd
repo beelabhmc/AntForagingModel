@@ -68,6 +68,208 @@ ggplot(convDifference, aes(x= Convergence.Time, y = Dif.D, color = Dif.Q)) +
 ```
 
 
+
+```{r POSTER attempt fig.height = 20, fig.width = 20}
+require(gridExtra)
+
+##########===========  N1 & GAMMA 2  =============###########
+
+# For file poster-test-conv-g2n1.csv
+convdf1 <- read.csv("poster-test-conv-g2n1-j5-200ts-conv10.csv")
+#convdf1 <- read.csv("poster-test-conv-g2n1-j5-200ts-conv1-NOTBESTFIT.csv")
+
+
+
+#Rounding
+convdf1$gamma2 <- round(convdf1$gamma2,6)
+convdf1$n1 <- round(convdf1$n1,4) #signif
+
+convdf1 <- convdf1 %>% rename( ɣ2 = gamma2)
+convdf1 <- convdf1%>% arrange(Convergence.Time)
+
+
+ggplot(convdf1, aes(x= WeightedAvg_D, y = WeightedAvg_Q, color = Convergence.Time)) +
+    geom_point(size=0.25) + ggtitle("Tradeoffs between two resources") + xlab("Distance from Focal Nest (Weighted Average)") +ylab("Quality (Weighted Average)") + facet_grid( ɣ2 ~ n1, labeller = label_both)+labs (title = "Food sources weighed by number of ants committed to them") + ylim(0,20)+ xlim(0,0.5)
+
+
+# density plot
+
+# ggplot(convdf1, aes(x= WeightedAvg_D, y = WeightedAvg_Q, color = Convergence.Time)) +
+#     stat_density_2d(aes(fill = ..level..), geom = "polygon") + scale_fill_distiller(palette= "Greens", direction=1) + ggtitle("Tradeoffs between two resources") + xlab("Weighted Average of Distance from Focal Nest") +ylab("Weighted Average of Quality")+ facet_grid(gamma2 ~ n1, labeller = label_both)+labs (title = "Food sources weighed by number of ants committed to them") + ylim(0,20)+ xlim(0,0.5)
+```
+
+```{r POSTER attempt fig.height = 20, fig.width = 20}
+require(gridExtra)
+##########========================================###########
+##########===========  N2 & GAMMA 3  =============###########
+##########========================================###########
+#
+convdf2 <- read.csv("poster-Q2D50-n2g3-5000-runs-MAY4.csv")
+#convdf2 <- read.csv("poster-test-conv-g3n2-j5-200ts-conv10.csv")
+#convdf2 <- read.csv("poster-test-conv-g3n2-j5-200ts-conv1-NOTBESTFIT.csv")
+#convdf2 <- read.csv("poster-test-conv-g3n2-j5-200ts-conv10-JUSTTOP.csv")
+
+#Rounding
+convdf2$gamma3 <- round(convdf2$gamma3,4)
+convdf2$n2 <- round(convdf2$n2,4) #signif
+
+convdf2 <- convdf2 %>% rename( ɣ3 = gamma3)
+convdf2 <- convdf2%>% arrange(Convergence.Time)
+
+
+#convdf$gamma3 <- scientific(convdf$gamma3, digits = 3)
+#convdf$n2 <-scientific(convdf$n2, digits = 3)
+# color = Convergence.Time
+
+# For file poster-test-conv-g3n2.csv:
+ggplot(convdf2, aes(x= WavgDTop2, y = WavgQTop2, color = Convergence.Time)) +
+    geom_point(size=0.25) + ggtitle("Tradeoffs between two resources") + xlab("Distance from Focal Nest (Weighted Average)") +ylab("Quality (Weighted Average)") + facet_grid( ɣ3 ~ n2, labeller = label_both)+labs (title = "Food sources weighed by number of ants committed to them") + ylim(0,20)+ xlim(0,0.5)
+
+
+# density plot
+
+# ggplot(convdf, aes(x= WeightedAvg_D, y = WeightedAvg_Q, color = Convergence.Time)) +
+#     stat_density_2d(aes(fill = ..level..), geom = "polygon") + scale_fill_distiller(palette= "Greens", direction=1) + ggtitle("Tradeoffs between two resources") + xlab("Weighted Average of Distance from Focal Nest") +ylab("Weighted Average of Quality")+ facet_grid(gamma3 ~ n2, labeller = label_both)+labs (title = "Food sources weighed by number of ants committed to them") + ylim(0,20)+ xlim(0,0.5)
+
+```
+
+```{r fig.height = 11, fig.width = 18}
+##########===========  N1 & GAMMA 2  =============###########
+##########===========  12345 TEST    =============###########
+##########========================================###########
+
+convdf3 <- read.csv("poster-TOP12345-g2n1-j5-200ts-conv10.csv")
+
+
+#Rounding
+convdf3$gamma2 <- signif(convdf3$gamma2,2)
+convdf3$n1 <- signif(convdf3$n1,2) #round
+
+convdf3 <- convdf3 %>% rename( ɣ2 = gamma2)
+convdf3 <- convdf3 %>% rename( η1 = n1)
+convdf3 <- convdf3%>% arrange(Convergence.Time)
+
+# for file "poster-TOP12345-g3n2-j5-200ts-conv10.csv"
+# ggplot(convdf3, aes(x= WavgDTop5, y = WavgQTop5, color = Convergence.Time)) +
+#     geom_point(size=2)  +  xlab("Distance from Focal Nest (Weighted Average)") +ylab("Quality (Weighted Average)") + facet_grid( ɣ2 ~ n1, labeller = label_both)+labs (title = "top 5") + ylim(0,20)+ xlim(0,0.5)+ theme(text = element_text(size = 60))+ theme(axis.text = element_text(size = 30))  
+
+# ggplot(convdf3, aes(x= WavgDTop4, y = WavgQTop4, color = Convergence.Time)) +
+#     geom_point(size=0.001)  +  xlab("Distance from Focal Nest (Weighted Average)") +ylab("Quality (Weighted Average)") + facet_grid( gamma2 ~ n1, labeller = label_both)+labs (title = "top 4") + ylim(0,20)+ xlim(0,0.5)
+
+# 
+# ggplot(convdf3, aes(x= WavgDTop3, y = WavgQTop3, color = Convergence.Time)) +
+#     geom_point(size=0.2)  +  xlab("Distance from Focal Nest (Weighted Average)") +ylab("Quality (Weighted Average)") + facet_grid( gamma2 ~ n1, labeller = label_both)+labs (title = "top 3") + ylim(0,20)+ xlim(0,0.5)
+# 
+ggplot(convdf3, aes(x= WavgDTop2, y = WavgQTop2, color = Convergence.Time)) +
+    geom_point(size=2)  +  xlab("Distance from Nest (Weighted Average)") +ylab("Quality (Weighted Average)") + facet_grid( ɣ2 ~ η1, labeller = label_both)+labs (title = "top 2") + ylim(0,20)+ xlim(0,0.5)+ theme(text = element_text(size = 60))+ theme(axis.text = element_text(size = 30)) 
+
+
+# ggplot(convdf3, aes(x= WavgDTop1, y = WavgQTop1, color = Convergence.Time)) +
+#     geom_point(size=2)  +  xlab("Distance from Focal Nest (Weighted Average)") +ylab("Quality (Weighted Average)") + facet_grid( ɣ2 ~ n1, labeller = label_both)+labs (title = "top 1") + ylim(0,20)+ xlim(0,0.5)+ theme(text = element_text(size = 60))+ theme(axis.text = element_text(size = 30)) 
+```
+
+
+
+```{r fig.height = 11, fig.width = 18}
+##########========================================###########
+##########===========   APRIL TEST  =============###########
+##########========================================###########
+
+convdf3 <- read.csv("APRIL29-QD-sweep-v1.csv")
+
+
+#Rounding
+convdf3$Qmax <- signif(convdf3$Qmax,2)
+convdf3$Dmax <- signif(convdf3$Dmax,2) #round
+
+#convdf3 <- convdf3 %>% rename( ɣ2 = gamma2)
+#convdf3 <- convdf3 %>% rename( η1 = n1)
+convdf3 <- convdf3%>% arrange(Convergence.Time)
+
+ggplot(convdf3, aes(x= WavgDTop2, y = WavgQTop2, color = Convergence.Time)) +
+    geom_point(size=8)  +  xlab("Distance from Nest (Weighted Average)") +ylab("Quality (Weighted Average)") + facet_grid( Qmax ~ Dmax, labeller = label_both) + ylim(0.1,5)+ xlim(0.1,5) +labs (title = "APRIL29-QD-sweep-v1.csv") + theme(text = element_text(size = 60))+ theme(axis.text = element_text(size = 30))
+
+#+ ylim(0,Qmax)+ xlim(0,Dmax)
+
+########
+
+convdf4 <- read.csv("APRIL29-ks-v1.csv")
+convdf4$K <- signif(convdf4$K,2)
+convdf4$s <- signif(convdf4$s,2) #round
+convdf4 <- convdf4%>% arrange(Convergence.Time)
+
+ggplot(convdf4, aes(x= WavgDTop2, y = WavgQTop2, color = Convergence.Time)) +
+    geom_point(size=8)  +  xlab("Distance from Nest (Weighted Average)") +ylab("Quality (Weighted Average)") + facet_grid( K ~ s, labeller = label_both)+labs (title = "K and s APRIL29-ks-v1.csv") + ylim(0.1,.25)+ xlim(2.75,5)+ theme(text = element_text(size = 60))+ theme(axis.text = element_text(size = 30)) 
+
+
+```
+
+```{r fig.height = 11, fig.width = 18}
+##########========================================###########
+##########===========  POSTER MAY 4  =============###########
+##########===========                =============###########
+##########========================================###########
+
+
+convdf5 <- read.csv("MAY4-y3n2-v5.csv")
+
+#Rounding
+convdf5$gamma3 <- signif(convdf5$gamma3,2)
+convdf5$n2 <- signif(convdf5$n2,2) #round
+
+convdf5 <- convdf5 %>% rename( ɣ3 = gamma3)
+convdf5 <- convdf5 %>% rename( η2 = n2)
+convdf5 <- convdf5%>% arrange(Convergence.Time)
+
+ggplot(convdf5, aes(x= WavgDTop2, y = WavgQTop2, color = Convergence.Time)) +
+    geom_point(size=10)  +  xlab("Distance from Nest (Weighted Average)") +ylab("Quality (Weighted Average)") + facet_grid( ɣ3 ~ η2, labeller = label_both)+labs (title = "MAY4-y3n2-v1.csv")+ ylim(.1,0.25)+ xlim(2.5,5) + theme(text = element_text(size = 60))+ theme(axis.text = element_text(size = 30))
+
+#  + ylim(.1,0.25)+ xlim(2.5,5)
+```
+
+
+
+
+
+
+
+```{r fig.height = 11, fig.width = 18}
+##########========================================###########
+##########===========  N2 & GAMMA 3  =============###########
+##########===========  12345 TEST    =============###########
+##########========================================###########
+
+#convdf4 <- read.csv("poster-TOP12345-g3n2-j5-200ts-conv10.csv")
+#convdf4 <- read.csv("poster-n2g3-5000-runs-12345data.csv")
+convdf4 <- read.csv("poster-Q2D50-n2g3-5000-runs-12345data.csv")
+
+
+#Rounding
+convdf4$gamma3 <- signif(convdf4$gamma3,2)
+convdf4$n2 <- signif(convdf4$n2,2) #round
+
+convdf4 <- convdf4 %>% rename( ɣ3 = gamma3)
+convdf4 <- convdf4 %>% rename( η2 = n2)
+convdf4 <- convdf4%>% arrange(Convergence.Time)
+
+# for file "poster-TOP12345-g3n2-j5-200ts-conv10.csv"
+ggplot(convdf4, aes(x= WavgDTop5, y = WavgQTop5, color = Convergence.Time)) +
+    geom_point(size=20)  +  xlab("Distance from Nest (Weighted Average)") +ylab("Quality (Weighted Average)") + facet_grid( ɣ3 ~ η2, labeller = label_both)+labs (title = "top 5") + ylim(0,2)+ xlim(0,1)+ theme(text = element_text(size = 60))+ theme(axis.text = element_text(size = 30))
+
+# ggplot(convdf4, aes(x= WavgDTop4, y = WavgQTop4, color = Convergence.Time)) +
+#     geom_point(size=0.001)  +  xlab("Distance from Focal Nest (Weighted Average)") +ylab("Quality (Weighted Average)") + facet_grid( gamma3 ~ n2, labeller = label_both)+labs (title = "top 4") + ylim(0,20)+ xlim(0,0.5)
+# 
+# ggplot(convdf4, aes(x= WavgDTop3, y = WavgQTop3, color = Convergence.Time)) +
+#     geom_point(size=0.2)  +  xlab("Distance from Focal Nest (Weighted Average)") +ylab("Quality (Weighted Average)") + facet_grid( gamma3 ~ n2, labeller = label_both)+labs (title = "top 3") + ylim(0,20)+ xlim(0,0.5)
+# 
+ggplot(convdf4, aes(x= WavgDTop2, y = WavgQTop2, color = Convergence.Time)) +
+    geom_point(size=2)  +  xlab("Distance from Nest (Weighted Average)") +ylab("Quality (Weighted Average)") + facet_grid( ɣ3 ~ η2, labeller = label_both)+labs (title = "top 2") + ylim(0,20)+ xlim(0,1)+ theme(text = element_text(size = 60))+ theme(axis.text = element_text(size = 30)) 
+
+
+# ggplot(convdf4, aes(x= WavgDTop1, y = WavgQTop1, color = Convergence.Time)) +
+#     geom_point(size=2)  +  xlab("Distance from Nest (Weighted Average)") +ylab("Quality (Weighted Average)") + facet_grid( ɣ3 ~ η2, labeller = label_both)+labs (title = "top 1") + ylim(0,20)+ xlim(0,0.5)+ theme(text = element_text(size = 60))+ theme(axis.text = element_text(size = 30)) 
+```
+
 ```{r conv time data}
 convdf <- read.csv(" tenth_gamma1_2trail_conv_vals_QDST.csv")
 #if it doesn't want to read it, put a space after the first "
