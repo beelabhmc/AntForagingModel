@@ -30,40 +30,21 @@ Search for ":3" to find the places where you'll need to update file names and pa
 #LOW : etas 0.1, gammas 0.00001
 #HIGH: etas 10, gammas 0.01
 
-
-runs   = 1000            
-J      = 5             
-N      = 5000        
-alpha  = 9.170414e+01  
-s      = 8.124702e+01  
-gamma1 = 1.186721e+01
-gamma2 = 5.814424e-06 
-gamma3 = 1.918047e-03    
-K      = 8.126483e-03    
-n1     = 1.202239e+00    
-n2     = 9.902102e-01    
-
-Qmin = 0                 
-Qmax = 20
-Dmin = 0                 
-Dmax = 0.5
-
-# v 5
-# runs   = 200 # for some reason i get a key loc error if i change this to something bigger             
-# J      = 2           
-# N      = 5000            
-# alpha    =  0.006
-# K      =  0.1
-# s      = 0.004
-# gamma1 = 0.02
-# gamma2 =  0.0021             
-# gamma3 =  0.0021               
-# n1     =  1             
-# n2     =  1           
-# Qmin = 0.1          
-# Qmax = 0.25
-# Dmin = 2.75            
-# Dmax = 5
+runs   = 200              
+J      = 2           
+N      = 5000            
+alpha    =  0.006
+s      = 0.0004
+gamma1 = 0.02
+gamma2 =  0.0021             
+gamma3 =  0.0021               
+K      = 0.02
+n1     =  1             
+n2     =  1           
+Qmin = 0.1          
+Qmax = 0.25
+Dmin = 2.75            
+Dmax = 5
 
 betaB  = np.zeros(J)     # How much each ant contributes to recruitment to a trail
 betaS  = np.zeros(J)     # Relationship btwn pheromone strength of a trail & its quality
@@ -138,14 +119,14 @@ def create_QDs():
     for i in range(J):
         qdlist_names.append("D" + str(i+1))
     qdlist = pd.DataFrame.from_records(qdlist, columns = qdlist_names) 
-    qdlist.to_csv(r'/Users/nfn/Desktop/Ants/QD_list_may4_j2_0-20-666.csv', index = False) # Fletcher's path :3
+    qdlist.to_csv(r'/Users/nfn/Desktop/Ants/QD_list_april_29_j2.csv', index = False) # Fletcher's path :3
 
 
 # REMOVE after first run :3
 create_QDs()
 
 #WHEN USING PRE-GENERATED Q and D
-qd_df = pd.read_csv (r'/Users/nfn/Desktop/Ants/QD_list_may4_j2_0-20-666.csv') # Import quality and distance list :3
+qd_df = pd.read_csv (r'/Users/nfn/Desktop/Ants/QD_list_april_29_j2.csv') # Import quality and distance list :3
 q_df = qd_df[['Q1','Q2']]#,'Q3','Q4','Q5']]  # These are hard-coded for J = 5
 d_df = qd_df[['D1','D2']]#,'D3','D4','D5']] 
 
@@ -211,7 +192,7 @@ def ivp_simulation(qd_df_index):
         rowToAdd = rowToAdd.tolist()
         finalvals = sol.y[:,-1].tolist()
         rowToAdd = rowToAdd + finalvals + [sol.t[-1]] # Qs + Ds + final ants + final time
-        rowToAdd = rowToAdd + [gamma3] + [n2] #CHANGE PARAMS HERE :3
+        rowToAdd = rowToAdd + [K] + [s] #CHANGE PARAMS HERE :3
 
 
         #do quality, dist averages
@@ -268,8 +249,8 @@ def colnamer():
     for i in range(J):
         names.append("Final Ants " + str(i+1))
     names.append("Convergence Time")
-    names.append("gamma3")     #CHANGE PARAMS HERE :3
-    names.append("n2")         #CHANGE PARAMS HERE :3
+    names.append("K")     #CHANGE PARAMS HERE :3
+    names.append("s")         #CHANGE PARAMS HERE :3
     #names.append("WavgQTop5")
    # names.append("WavgDTop5")
     #names.append("WavgQTop4")
@@ -284,16 +265,16 @@ def colnamer():
 
 convlist = []
 # The "middle" value of the parameters we're sweeping
-basea = 0.0021                   # ⬅️❗️⚠️ #CHANGE PARAM VALUES HERE :3
-baseb = 1
+basea = 0.01                    # ⬅️❗️⚠️ #CHANGE PARAM VALUES HERE :3
+baseb = 0.0004 
 
-avals = [0.00019,0.00096, 0.0019, 0.0038, 0.019]#[0.01* basea , 0.5* basea, basea , 2*basea, 10*basea]      
-bvals = [0.0999,0.5, 0.99, 2, 9.9]#[0.01* baseb , 0.5* baseb ,baseb  , 2*baseb , 10*baseb]
+avals = [0.1* basea , 0.5* basea, basea , 2*basea, 10*basea]      
+bvals = [0.1* baseb , 0.5* baseb , baseb  , 2*baseb , 10*baseb]
 
 for p in tqdm(range(len(avals))):                    # for each value of paramA... (assumes len(avals) = lensouthboundvals))                         
     for q in range(len(bvals)):
-        gamma3 = avals[p]                      # ⬅️❗️⚠️ #CHANGE PARAMS HERE :3
-        n2 = bvals[q]                      # ⬅️❗️⚠️ #CHANGE PARAMS HERE :3
+        K = avals[p]                      # ⬅️❗️⚠️ #CHANGE PARAMS HERE :3
+        s = bvals[q]                      # ⬅️❗️⚠️ #CHANGE PARAMS HERE :3
         #print(K)
         #print(s)
         
@@ -307,7 +288,7 @@ for p in tqdm(range(len(avals))):                    # for each value of paramA.
 colnameslist = colnamer()
 convdf = pd.DataFrame.from_records(convlist, columns = colnameslist) 
 #print(convdf)
-convdf.to_csv(r'/Users/nfn/Desktop/Ants/MAY4-y3n2-v666.csv', index = False) # Fletcher's path :3
+convdf.to_csv(r'/Users/nfn/Desktop/Ants/APRIL29-ks-v1.csv', index = False) # Fletcher's path :3
 
 # sol.t is timesteps
 # sol.y is the solutions: one row for each trail, timesteps are cols
