@@ -1,0 +1,17 @@
+---
+title: "Weighet Plot"
+output: html_notebook
+---
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+weight_avg_test <- read_csv("results/weight_avg_test.csv", show_col_types = FALSE)
+bins <- 20
+h <- hist(weight_avg_test$waD, breaks=bins, xlab="av. distance to food sources (m)", ylab="count")
+fit <- lm(log(h$counts)~ h$mids)
+summary(fit)
+print(exp(fit$coefficients[1]))
+print(fit$coefficient[2])
+```
