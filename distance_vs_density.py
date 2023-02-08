@@ -10,20 +10,20 @@ import os
 # PARAMETERS
 
 #Parameters for the simulation
-runs   = 500             # How many times we run the simulation
+runs   = 100             # How many times we run the simulation
 J      = 5               # Number of food sources (aka, number of trails to food sources)
 N      = 10000           # Total number of ants
 
 #Parameters from the equation, accessed by name
 p    = {
-"alpha"  : 0.75            # Per capita rate of spontaneous discoveries
-"s"      : 3.5             # Per capita rate of ant leaving trail per distance
-"gamma1" : 0.2             # Range of foraging scouts
-"gamma2" : 0.021           # Range of recruitment activity
-"gamma3" : 0.021           # Range of influence of pheromone
-"K"      : 1               # Inertial effects that may affect pheromones
-"n1"     : 20              # Individual ant's contribution to rate of recruitment (orig. eta1)
-"n2"     : 20              # Pheromone strength of trail (originally eta2)       
+"alpha"  : 0.75,            # Per capita rate of spontaneous discoveries
+"s"      : 3.5,             # Per capita rate of ant leaving trail per distance
+"gamma1" : 0.2,             # Range of foraging scouts
+"gamma2" : 0.021,           # Range of recruitment activity
+"gamma3" : 0.021,           # Range of influence of pheromone
+"K"      : 1,               # Inertial effects that may affect pheromones
+"n1"     : 20,              # Individual ant's contribution to rate of recruitment (orig. eta1)
+"n2"     : 20               # Pheromone strength of trail (originally eta2)       
         }
 
 Qmin = 0
@@ -31,8 +31,8 @@ Qmax = 20
 Dmin = 0
 Dmax = 60
 
-betaB  = np.zeros(p["J"])     # How much each ant contributes to recruitment to a trail
-betaS  = np.zeros(p["J"])     # Relationship btwn pheromone strength of a trail & its quality
+betaB  = np.zeros(J)     # How much each ant contributes to recruitment to a trail
+betaS  = np.zeros(J)     # Relationship btwn pheromone strength of a trail & its quality
 
 # TIME
 
@@ -62,7 +62,7 @@ def dx_dt(x,t,Q,D,betaB,betaS):
 
 def simulation():
 
-    final_time = np.zeros(runs, J)
+    final_time = np.zeros([runs, J])
     weight_avg_D = np.zeros(runs) # Sum of (# of ants on a trail * its distance)/(total number of trails)
     for w in range(runs):
         print(f"Run {w} of {runs} is running.\r", end="")
@@ -110,6 +110,21 @@ def get_fit(weight_avg):
     print(f"beta: {b}")
     return b
 
+def plot_sweep_one(sweep_data):
+    """ 
+    plot_sweep_one takes in the output of sweep_one_fit and plots the values
+    """
+    # Make our plot
+    #plt.rcParams['text.usetex'] = True                      #Comment out this line if you don't want to render latex.
+    fig, ax = plt.subplots(figsize=(6,4), tight_layout=True)
+
+    ax.plot(sweep_data[1], sweep_data[2])
+
+    ax.set_xlabel(sweep_data[0])
+    ax.set_ylabel("Beta")
+    plt.show()
+
+
 def sweep_one_fit(param, values):
     """ sweep_one_rtakes in the name of a parameter param string (ex: "alpha") and a list of the values
         to run a sweep on.
@@ -118,8 +133,9 @@ def sweep_one_fit(param, values):
     b_list = []
     for val in values:
         p[param] = val
-        b_list.append(simulation)
-    return values, b_list
+        b_list.append(simulation())
+    return param, values, b_list
 
-sim = simulation()
-plot_fit(get_fit(sim), sim)
+#sim = simulation()
+#plot_fit(get_fit(sim), sim)
+plot_sweep_one(sweep_one_fit("gamma2", [5.8e-7, 2.96e-6, 5.8e-6, 1.2e-5, 5.8e-5]))
