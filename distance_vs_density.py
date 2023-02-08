@@ -133,7 +133,7 @@ def sweep_one_fit(param, values):
     b_list = []
     for val in values:
         p[param] = val
-        b_list.append(simulation())
+        b_list.append(get_fit(simulation()))
     return param, values, b_list
 
 #sim = simulation()
