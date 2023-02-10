@@ -10,7 +10,7 @@ import os
 # PARAMETERS
 
 #Parameters for the simulation
-runs   = 100             # How many times we run the simulation
+runs   = 100            # How many times we run the simulation
 J      = 5               # Number of food sources (aka, number of trails to food sources)
 N      = 10000           # Total number of ants
 
@@ -98,7 +98,7 @@ def plot_fit(b, weight_avg):
     ax.plot(x_fitted, y_fitted)
 
     ax.set_xlabel("Weighted Average of Distance to Food Source")
-    ax.set_ylabel(r'$10^{-2}$ Density')
+    ax.set_ylabel('$10^{-2}$ Density')
     plt.show()
 
 def get_fit(weight_avg):
@@ -136,6 +136,49 @@ def sweep_one_fit(param, values):
         b_list.append(get_fit(simulation()))
     return param, values, b_list
 
+
+def sweep_two_fit(param1, param2, values1, values2):
+    index = values1
+    columns = values2
+    df = pd.DataFrame(0, index = index, columns = columns)
+    for val1 in values1:
+        for val2 in values2:
+             p[param1] = val1
+             p[param2] = val2
+             df.at[val1,val2] = get_fit(simulation())
+    #print(df)
+    return df, param1, param2
+    
+
+def plot_sweep_two(sweepdata):
+    """ 
+    plot_sweep_two takes in the output of sweep_one_fit and plots the values
+    """
+    #print(sweepdata)
+    fig, ax = plt.subplots(figsize=(6,4), tight_layout=True)
+   # Displaying dataframe as an heatmap
+   # with diverging colourmap as RdYlBu
+    plt.imshow(sweepdata[0], cmap ="RdYlBu")
+  
+    # Displaying a color bar to understand
+    # which color represents which range of data
+    plt.colorbar()
+  
+    # Assigning labels of x-axis 
+    # according to dataframe
+    plt.xticks(range(len(sweepdata[0])), sweepdata[0].index)
+  
+    # Assigning labels of y-axis 
+    # according to dataframe
+    plt.yticks(range(len(sweepdata[0])), sweepdata[0].columns)
+
+    ax.set_xlabel(sweepdata[1])
+    ax.set_ylabel(sweepdata[2])
+  
+    # Displaying the figure
+    plt.show()
+
 #sim = simulation()
 #plot_fit(get_fit(sim), sim)
-plot_sweep_one(sweep_one_fit("gamma2", [5.8e-7, 2.96e-6, 5.8e-6, 1.2e-5, 5.8e-5]))
+# plot_sweep_one(sweep_one_fit("gamma2", [5.8e-7, 2.96e-6, 5.8e-6, 1.2e-5, 5.8e-5]))
+plot_sweep_two(sweep_two_fit("gamma2", "n1", [5.8e-7, 2.96e-6, 5.8e-6, 1.2e-5, 5.8e-5], [0.12, 0.6, 1.2, 2.4, 12]))
