@@ -63,7 +63,10 @@ def dx_dt(x,t,Q,D,betaB,betaS):
 def simulation():
 
     final_time = np.zeros([runs, J])
-    weight_avg_D = np.zeros(runs) # Sum of (# of ants on a trail * its distance)/(total number of trails)
+    weight_ants_avg_D = np.zeros(runs) # Sum of (# of ants on a trail * its distance)/(total number of trails)
+    unweight_avg_D = np.zeros(runs)
+    weight_quality_avg_D = np.zeros(runs)
+    
     for w in range(runs):
         print(f"Run {w} of {runs} is running.\r", end="")
         Q = np.random.uniform(Qmin, Qmax, J)         #Choose each trail's quality from uniform dist
@@ -74,9 +77,20 @@ def simulation():
 
         xs = odeint(dx_dt, x0, tspan, args=(Q,D,betaB,betaS)) #Solves the system. Columns: trail, Rows: time step
         final_time[w,:] = xs[-1,:]
-        weight_avg_D[w] = sum((final_time[w,:] * D)/N)
+        weight_ants_avg_D[w] = sum((final_time[w,:] * D)/N)
+        unweight_avg_D[w] = sum(D)/len(D)
+        weight_quality_avg_D[w] = sum(Q*D) / sum(Q)
 
-    return weight_avg_D
+    return unweight_avg_D, weight_ants_avg_D, weight_quality_avg_D
+
+def manipulate_data(data):
+    d_u_a = data[1] - data[0]
+    d_u_q = data[2] - data[0]
+    #Ratio > 1 implies that the ants are less more focused
+    ratio = d_u_a/d_u_q
+    ratio = [rat for rat in ratio if abs(rat) < 10]
+    plt.hist(ratio)
+    plt.show()
 
 def plot_fit(b, weight_avg):
     """
@@ -125,15 +139,22 @@ def plot_sweep_one(sweep_data):
     plt.show()
 
 
-def sweep_one_fit(param, values):
-    """ sweep_one_rtakes in the name of a parameter param string (ex: "alpha") and a list of the values
+def sweep_one_fit(param, values, save=True):
+    """ sweep_one_takes in the name of a parameter param string (ex: "alpha") and a list of the values
         to run a sweep on.
         Returns two arrays, the first containing the values and the second the resulting b value.
     """
     b_list = []
     for val in values:
+        #Iterate through all the values and get the resulting Beta value
         p[param] = val
         b_list.append(get_fit(simulation()))
+    if save:
+        #Save the data
+        d = {"values": values, "betas": b_list}
+        df = pd.DataFrame(data = d)
+        df.to_csv(f'{path.dirname(__file__)}/results/{param}-sweep-.csv', index = False)
+
     return param, values, b_list
 
 
@@ -146,7 +167,6 @@ def sweep_two_fit(param1, param2, values1, values2):
              p[param1] = val1
              p[param2] = val2
              df.at[val1,val2] = get_fit(simulation())
-    #print(df)
     return df, param1, param2
     
 
@@ -154,10 +174,9 @@ def plot_sweep_two(sweepdata):
     """ 
     plot_sweep_two takes in the output of sweep_one_fit and plots the values
     """
-    #print(sweepdata)
     fig, ax = plt.subplots(figsize=(6,4), tight_layout=True)
-   # Displaying dataframe as an heatmap
-   # with diverging colourmap as RdYlBu
+    # Displaying dataframe as an heatmap
+    # with diverging colourmap as RdYlBu
     plt.imshow(sweepdata[0], cmap ="RdYlBu")
   
     # Displaying a color bar to understand
@@ -180,5 +199,6 @@ def plot_sweep_two(sweepdata):
 
 #sim = simulation()
 #plot_fit(get_fit(sim), sim)
-# plot_sweep_one(sweep_one_fit("gamma2", [5.8e-7, 2.96e-6, 5.8e-6, 1.2e-5, 5.8e-5]))
-plot_sweep_two(sweep_two_fit("gamma2", "n1", [5.8e-7, 2.96e-6, 5.8e-6, 1.2e-5, 5.8e-5], [0.12, 0.6, 1.2, 2.4, 12]))
+#plot_sweep_one(sweep_one_fit("gamma2", [5.8e-7, 2.96e-6, 5.8e-6, 1.2e-5, 5.8e-5]))
+#plot_sweep_two(sweep_two_fit("gamma2", "n1", [5.8e-7, 2.96e-6, 5.8e-6, 1.2e-5, 5.8e-5], [0.12, 0.6, 1.2, 2.4, 12]))
+manipulate_data(simulation())

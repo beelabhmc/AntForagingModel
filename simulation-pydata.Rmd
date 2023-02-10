@@ -12,12 +12,12 @@ library(ggplot2)
 library(ggExtra)
 library(viridis)
 library(RColorBrewer)
+library(vctrs)
 library(scico)
-
 ```
 
 ```{r convdata FACET fig.height = 12, fig.width = 12}
-convdf <- read.csv("10-2-gamma1-alpha_facet_QDST.csv")
+convdf <- read.csv("results/testing2.csv")
 #if it doesn't want to read it, put a space after the first "
 View(convdf)
 # Specify which path is chosen
@@ -34,7 +34,7 @@ convdf <- convdf %>% mutate(
   Ants.Disfavored = Final.Ants.1 *(Favored ==2) + Final.Ants.2 * (Favored ==1), 
   )
 
-convdf <- convdf %>% select (Convergence.Time, Q.Favored, Q.Disfavored, D.Favored, D.Disfavored, Ants.Favored, Ants.Disfavored, gamma1, alpha) # CHANGE FOR PARAMS :3
+convdf <- convdf %>% select (Convergence.Time, Q.Favored, Q.Disfavored, D.Favored, D.Disfavored, Ants.Favored, Ants.Disfavored, K, s) # CHANGE FOR PARAMS :3
 
 
 round_any = function(x, accuracy, f=round){f(x/ accuracy) * accuracy}
@@ -48,28 +48,28 @@ convDifference <- convdf %>% mutate(
 #View (convDifference)
 
 p1<- ggplot(convDifference, aes(x= Dif.D, y = Dif.Q, color = Convergence.Time)) + 
-    geom_point(size=1) + ggtitle("Tradeoffs between two resources") + ylab("Difference in Quality") +xlab("Difference in Distance") + facet_grid( gamma1 ~ alpha, labeller = label_both)  # :3
+    geom_point(size=1) + ggtitle("Tradeoffs between two resources") + ylab("Difference in Quality") +xlab("Difference in Distance") + facet_grid( K ~ s, labeller = label_both)  # :3
 
 # reg<-lm(dist ~ speed, data = cars)
 # abline(reg, col="blue")
 
 
 p2<- ggplot(convDifference %>% filter (Convergence.Time>= 40), aes(x= Dif.D, y = Dif.Q, color = Convergence.Time)) + 
-    geom_point(size=1) + ggtitle("Runs with a Convergence Time of 40-50") + ylab("Difference in Quality") +xlab("Difference in Distance") + facet_grid( gamma1 ~ alpha, labeller = label_both) + geom_hline(yintercept=0)+ geom_vline(xintercept=0)
+    geom_point(size=1) + ggtitle("Runs with a Convergence Time of 40-50") + ylab("Difference in Quality") +xlab("Difference in Distance") + facet_grid( K ~ s, labeller = label_both) + geom_hline(yintercept=0)+ geom_vline(xintercept=0)
 
 # add for axes:
 # + geom_hline(yintercept=0)+ geom_vline(xintercept=0)
 
 ggplot(convDifference, aes(x= Convergence.Time, y = Dif.Q, color = Dif.D)) + 
-     geom_point(size=0.7, alpha = 0.7) + ggtitle("Convergence time and Difference in Quality") + ylab("Difference in Quality") +xlab("Convergence time") + facet_grid( gamma1 ~ alpha, labeller = label_both) + geom_hline(yintercept=0, colour = "black") + scale_color_scico(palette = 'vikO', limits = c(-1, 1) * max(abs(convDifference$Dif.D))) + theme_minimal()
+     geom_point(size=0.7, alpha = 0.7) + ggtitle("Convergence time and Difference in Quality") + ylab("Difference in Quality") +xlab("Convergence time") + facet_grid( K ~ s, labeller = label_both) + geom_hline(yintercept=0, colour = "black") + scale_color_scico(palette = 'vikO', limits = c(-1, 1) * max(abs(convDifference$Dif.D))) + theme_minimal()
 
 ggplot(convDifference, aes(x= Convergence.Time, y = Dif.D, color = Dif.Q)) + 
-     geom_point(size=0.7, alpha = 0.7) + ggtitle("Convergence time and Difference in Distance") + ylab("Difference in Distance") +xlab("Convergence time") + facet_grid( gamma1 ~ alpha, labeller = label_both) + geom_hline(yintercept=0, colour = "black") + scale_color_scico(palette = 'vikO', limits = c(-1, 1) * max(abs(convDifference$Dif.Q))) + theme_minimal()
+     geom_point(size=0.7, alpha = 0.7) + ggtitle("Convergence time and Difference in Distance") + ylab("Difference in Distance") +xlab("Convergence time") + facet_grid( K ~ s, labeller = label_both) + geom_hline(yintercept=0, colour = "black") + scale_color_scico(palette = 'vikO', limits = c(-1, 1) * max(abs(convDifference$Dif.Q))) + theme_minimal()
 ```
 
 
 ```{r conv time data}
-convdf <- read.csv(" tenth_gamma1_2trail_conv_vals_QDST.csv")
+convdf <- read.csv("results/testing2.csv")
 #if it doesn't want to read it, put a space after the first "
 
 # Specify which path is chosen
@@ -146,7 +146,7 @@ head(convdf)
 
 # IMPORT WEIGHTED AVERAGES DF
 # ❗️🐝 Change name to your CSV filename. Make sure it's in the same directory as this RMD❗❗️
-wavg_df <- read.csv("2-sweep-test.csv")
+wavg_df <- read.csv("results/2-sweep-test.csv")
 
 #head(param_df)
 #View(param_df)
@@ -171,20 +171,20 @@ require(gridExtra)
 # capt4 <- paste(capt0, "\n", capt1, "\n", capt2, "\n", capt3)
 
 wQprob_hist <- ggplot(data = wavg_df) +
-  geom_histogram(mapping = aes(x = WeightedQ, y = ..density..), binwidth = 1)+ facet_grid(rows = vars(Param.Values))+labs (title = "gamma3")+
+  geom_histogram(mapping = aes(x = WeightedQ, y = ..density..), binwidth = 1)+ facet_grid(rows = vars(Param.Values))+labs (title = "alpha")+
     theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
 wDprob_hist <- ggplot(data = wavg_df) +
-  geom_histogram(mapping = aes(x = WeightedD, y = ..density..), binwidth = .01)+ facet_grid(rows = vars(Param.Values)) +labs (title = "gamma3")+
+  geom_histogram(mapping = aes(x = WeightedD, y = ..density..), binwidth = .01)+ facet_grid(rows = vars(Param.Values)) +labs (title = "alpha")+
     theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
 #Another option: y = ..scaled.. (Scales to highest value is 1)
 
 grid.arrange(wQprob_hist, wDprob_hist, ncol=2)#, bottom = capt4)
 
-wQ_box<- ggplot(wavg_df, aes(x= as.factor(Param.Values), y=WeightedQ)) + geom_boxplot(fill="slateblue", alpha=0.2) + xlab ("Gamma3 values")
+wQ_box<- ggplot(wavg_df, aes(x= as.factor(Param.Values), y=WeightedQ)) + geom_boxplot(fill="slateblue", alpha=0.2) + xlab ("alpha values")
 
-wD_box<- ggplot(wavg_df, aes(x= as.factor(Param.Values), y=WeightedD)) + geom_boxplot(fill="slateblue", alpha=0.2)+ xlab ("Gamma3 values")
+wD_box<- ggplot(wavg_df, aes(x= as.factor(Param.Values), y=WeightedD)) + geom_boxplot(fill="slateblue", alpha=0.2)+ xlab ("alpha values")
 
 grid.arrange(wQ_box, wD_box, ncol=2)
 
@@ -195,7 +195,7 @@ grid.arrange(wQ_box, wD_box, ncol=2)
 This chunk creates a heatmap showing the average weighted quality and average weighted distance over all of the trials run with that set of parameters. We wrote this with the goal of figuring out what the relationship between gamma 2 and gamma 3 is. Knowing that will help us decide how to tether them when we run larger parameter sweeps. So far, we haven't seen any identifyable patterns.
 
 ```{r heatmap TWO params, fig.height = 2.5, fig.width = 6}
-
+library(magrittr)
 wavg_df <- wavg_df %>% filter(ParamA.Values > 0 & ParamB.Values >0)
 
 #View(wavg_df)
@@ -205,10 +205,10 @@ wavg_means <- wavg_df %>% group_by(ParamA.Values, ParamB.Values) %>%
 #View(wavg_means)
 
 wQ_heat <- ggplot(wavg_means, aes(ParamA.Values, ParamB.Values, fill= WeightedQ)) +
-  geom_tile() + xlab("Gamma 2") + ylab("Gamma 3")
+  geom_tile() + xlab("Eta 1") + ylab("Eta 2")
 
 wD_heat <- ggplot(wavg_means, aes(ParamA.Values, ParamB.Values, fill= WeightedD)) +
-  geom_tile() + xlab("Gamma 2") + ylab("Gamma 3")
+  geom_tile() + xlab("Eta 1") + ylab("Eta 2")
 
 require(gridExtra)
 grid.arrange(wQ_heat, wD_heat, ncol=2)
@@ -277,10 +277,10 @@ The below graphs show histograms of the difference of averages for quality and d
 # Python: dif_btwn_avgs_D[w] = weight_avg_D[w] - avg_D[w]   # negative difference- picking better than environment
 
 difQplot <- ggplot(data = wavg_df) +
-  geom_histogram(mapping = aes(x = Dif.Avgs.Q, y = ..density..), binwidth = 1)+ facet_grid(rows = vars(ParamA.Values), cols = vars(ParamB.Values))+labs (title = "Difference = Weighted Avg Quality — Avg Quality") + xlab("Gamma 2")+ ylab("Gamma 3") + geom_vline(xintercept = 0, color = "red", size=0.5)
+  geom_histogram(mapping = aes(x = Dif.Avgs.Q, y = ..density..), binwidth = 1)+ facet_grid(rows = vars(ParamA.Values), cols = vars(ParamB.Values))+labs (title = "Difference = Weighted Avg Quality — Avg Quality") + xlab("Eta 1")+ ylab("Eta 2") + geom_vline(xintercept = 0, color = "red", size=0.5)
 
 difDplot <- ggplot(data = wavg_df) +
-  geom_histogram(mapping = aes(x = Dif.Avgs.D, y = ..density..), binwidth = .02)+ facet_grid(rows = vars(ParamA.Values), cols = vars(ParamB.Values))+labs (title = "Difference = Weighted Avg Dist - Avg Dist") + xlab("Gamma 2")+ ylab("Gamma 3") + geom_vline(xintercept = 0, color = "red", size=0.5)
+  geom_histogram(mapping = aes(x = Dif.Avgs.D, y = ..density..), binwidth = .02)+ facet_grid(rows = vars(ParamA.Values), cols = vars(ParamB.Values))+labs (title = "Difference = Weighted Avg Dist - Avg Dist") + xlab("Eta 1")+ ylab("Eta 2") + geom_vline(xintercept = 0, color = "red", size=0.5)
 
 grid.arrange(difQplot, difDplot, ncol=2)
 

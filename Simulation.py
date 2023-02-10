@@ -4,6 +4,7 @@ import pandas as pd
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 import sys
+from os import path
 #np.set_printoptions(threshold=sys.maxsize) # This allows to you to print large arrays without truncating them
 
 #=================================================================================================#
@@ -45,6 +46,7 @@ x0 = np.zeros(J)         # We start with no ants on any of the trails
 
 all_params_names  =   ["runs", "J", "N", "alpha", "s", "gamma1", "gamma2", "gamma3", "K", "n1", "n2", "Qmin", "Qmax", "Dmin", "Dmax", "start", "stop", "step", "tspan", "x0"]
 all_params_vals   =   [runs, J, N, alpha, s, gamma1, gamma2, gamma3, K, n1, n2, Qmin, Qmax, Dmin, Dmax, start, stop, step, tspan, x0]
+
 
 #=================================================================================================#
 
@@ -98,10 +100,10 @@ def simulation():
     return (xs)     #this is just the data of # of ants on each trail for the last run
 
 """Run below only when not parameter sweeping:"""
-solutiondata = simulation()
+#solutiondata = simulation()
 # You can remove the below 2 lines when not graphing in this file
-for t in range(len(tspan)):
-    prop_committed_ants[t]    = sum(solutiondata[t,:]/N)
+#for t in range(len(tspan)):
+#    prop_committed_ants[t]    = sum(solutiondata[t,:]/N)
 
 #=================================================================================================#
 
@@ -114,10 +116,9 @@ for t in range(len(tspan)):
 # • We keep track of which value was used in a particular run (row) with the param_values list.
 
 # SWEEPING ONE PARAMETER
-
 """
-param            = np.linspace(0,0.1,5)       # (start, stop, # samples). Creates array of param values to test.
-all_params_names.append("gamma3")             # ⬅️❗️🐝 Update to match which params you're sweeping 🐝❗️
+param            = np.linspace(50,200,5)       # (start, stop, # samples). Creates array of param values to test.
+all_params_names.append("alpha")             # ⬅️❗️🐝 Update to match which params you're sweeping 🐝❗️
 all_params_vals.append(param)                 # Records what param values are being tested in the paramdf
 
 param_values     = []                         # specifies which value's used for param during each chunk of sim runs. used in df.
@@ -126,7 +127,7 @@ weight_avg_D_tot = []
 dif_btwn_avgs_Q_tot = []
 dif_btwn_avgs_D_tot = []
 for p in range(len(param)):                   # for each value of param...
-    gamma3 = param[p]                         # ⬅️❗️🐝 Update to match which params you're sweeping 🐝❗️
+    alpha = param[p]                         # ⬅️❗️🐝 Update to match which params you're sweeping 🐝❗️
     simulation()
     param_values += ([param[p]] * runs)       # add param value (once for each run) to list of param values
     weight_avg_Q_tot += list(weight_avg_Q)    # add onto list of quality weighted averages with values for this set of runs
@@ -139,12 +140,11 @@ for p in range(len(param)):                   # for each value of param...
 
 # SWEEPING TWO PARAMETERS
 
-# """
 #                 (start, stop, number of terms)
-paramA           = np.linspace(5.814424e-06,5.814424e-06,5)         # ⚠️ Make sure that paramA and paramB have the same number elements in this array!
-paramB           = np.linspace(0.0000001,0.1,5)         # You can also use np.arrange for (start, stop, step)
+paramA           = np.linspace(0.1,2,6)         # ⚠️ Make sure that paramA and paramB have the same number elements in this array!
+paramB           = np.linspace(0.1,2,5)         # You can also use np.arrange for (start, stop, step)
 
-all_params_names.extend(["gamma2", "gamma3"])     # ⬅️❗️⚠️ Update to match which params you're sweeping ⚠️❗️
+all_params_names.extend(["n1", "n2"])     # ⬅️❗️⚠️ Update to match which params you're sweeping ⚠️❗️
 all_params_vals.extend([paramA, paramB])          # Records what param values are being tested in the paramdf
 
 paramA_values    = []   
@@ -156,8 +156,8 @@ dif_btwn_avgs_D_tot = []
 for p in range(len(paramA)):                    # for each value of paramA... note- (len(paramA) = len(paramB))                         
     for q in range(len(paramB)):
         print(int(np.floor(p*100/len(paramB))), "% 🐜") # Progress bar 
-        gamma2 = paramA[p]                      # ⬅️❗️⚠️ Specify the first param you want to sweep  ⚠️❗️
-        gamma3 = paramB[q]                      # ⬅️❗️⚠️ Specify the second param you want to sweep ⚠️❗️
+        n1 = paramA[p]                      # ⬅️❗️⚠️ Specify the first param you want to sweep  ⚠️❗️
+        n2 = paramB[q]                      # ⬅️❗️⚠️ Specify the second param you want to sweep ⚠️❗️
         simulation()  
         paramA_values += ([paramA[p]] * runs)   # add paramA value (once for each run) to list of param values
         paramB_values += ([paramB[q]] * runs)  
@@ -174,6 +174,7 @@ for p in range(len(paramA)):                    # for each value of paramA... no
 #This is the dataframe of the number of ants on each trail
 #solutiondf = pd.DataFrame(data=solutiondata)
 #solutiondf.to_csv(r'/Users/nfn/Desktop/Ants/solutions-test.csv', index = False) # Fletcher's path
+#solutiondf.to_csv(f'{os.path.dirname(__file__)}/results/solutions-test.csv', index = False)
 
 # Create dataframe of all of the parameters we're using in this set of runs
 # This can help us recreate graphs and recall the context of each sweep
@@ -183,8 +184,9 @@ paramdf = pd.DataFrame(data=paramd)
 
 # Export
 #❗🐝 Remember to change filename 🐝❗️#
-paramdf.to_csv(r'/Users/nfn/Desktop/Ants/params_2-sweep-test.csv', index = False) # Fletcher's path
+#paramdf.to_csv(r'/Users/nfn/Desktop/Ants/params_2-sweep-test.csv', index = False) # Fletcher's path
 #paramdf.to_csv( INSERT PATH , index = False)                              # David's path
+paramdf.to_csv(f'{path.dirname(__file__)}/results/sweep-test.csv', index = False)
 
 #===========#
 
@@ -193,7 +195,7 @@ paramdf.to_csv(r'/Users/nfn/Desktop/Ants/params_2-sweep-test.csv', index = False
 # Create sweep's dataframe
 #❗🐝 Update to reflect how many params you swept 🐝❗️#
 """One parameter sweep:"""
-# d = {'Param Values': param_values, 'WeightedQ': weight_avg_Q_tot,'WeightedD': weight_avg_D_tot, 'Dif Avgs Q': dif_btwn_avgs_Q_tot, 'Dif Avgs D': dif_btwn_avgs_D_tot}
+#d = {'Param Values': param_values, 'WeightedQ': weight_avg_Q_tot,'WeightedD': weight_avg_D_tot, 'Dif Avgs Q': dif_btwn_avgs_Q_tot, 'Dif Avgs D': dif_btwn_avgs_D_tot}
 """Two parameter sweep:"""
 d = {'ParamA Values': paramA_values, 'ParamB Values': paramB_values, 'WeightedQ': weight_avg_Q_tot,'WeightedD': weight_avg_D_tot, 'Dif Avgs Q': dif_btwn_avgs_Q_tot, 'Dif Avgs D': dif_btwn_avgs_D_tot}
 """Both:"""
@@ -201,18 +203,18 @@ df = pd.DataFrame(data=d)
 
 # Export
 #❗️🐝 Remember to change filename 🐝❗️#
-df.to_csv(r'/Users/nfn/Desktop/Ants/2-sweep-test.csv', index = False) # Fletcher's path
+# df.to_csv(r'/Users/nfn/Desktop/Ants/2-sweep-test.csv', index = False) # Fletcher's path
 # df.to_csv( INSERT PATH , index = False)                                  # David's path
-
+df.to_csv(f'{path.dirname(__file__)}/results/2-sweep-test.csv', index = False)
 #=================================================================================================#
 
 # PLOTTING
 
 # We now do our plotting/visuals in R, but this is here in case we want quick graphs for a particular run.
-
 plt.rc('font', family='serif')
 
 """The number of ants on each trail over time"""
+"""
 plt.figure()
 for i in range(J):
    plt.plot(tspan, solutiondata[:,i], label = str(i+1))               
@@ -220,7 +222,7 @@ plt.title('Number of ants over time',fontsize=15)
 plt.xlabel('Time',fontsize=15)
 plt.ylabel('Number of ants',fontsize=15)
 plt.legend(title='Trail', bbox_to_anchor=(1.01, 0.5), loc='center left', borderaxespad=0.)
-
+"""
 """The proportion of ants committed to a trail"""
 # I think this is the proportion of ants that are foraging, not shown by trail
 # plt.figure()
@@ -268,7 +270,7 @@ plt.legend(title='Trail', bbox_to_anchor=(1.01, 0.5), loc='center left', bordera
 # plt.xlabel('Weighted Average of Distance',fontsize=15)
 # plt.ylabel('Probability',fontsize=15)
 
-plt.show()
+#plt.show()
 
 #=================================================================================================#
 

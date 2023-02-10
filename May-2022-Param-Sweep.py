@@ -7,6 +7,7 @@ from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 import sys
 from tqdm import tqdm
+from os import path
 #np.set_printoptions(threshold=sys.maxsize) # This allows to you to print large arrays without truncating them
 
 print("\n\n")
@@ -119,14 +120,14 @@ def create_QDs():
     for i in range(J):
         qdlist_names.append("D" + str(i+1))
     qdlist = pd.DataFrame.from_records(qdlist, columns = qdlist_names) 
-    qdlist.to_csv(r'/Users/nfn/Desktop/Ants/QD_list_april_29_j2.csv', index = False) # Fletcher's path :3
+    qdlist.to_csv(f'{path.dirname(__file__)}/results/testing.csv', index = False) # :3 update so we can run by specifying name
 
 
 # REMOVE after first run :3
-create_QDs()
+create_QDs() # :3 Make it so we don't need to do this
 
 #WHEN USING PRE-GENERATED Q and D
-qd_df = pd.read_csv (r'/Users/nfn/Desktop/Ants/QD_list_april_29_j2.csv') # Import quality and distance list :3
+qd_df = pd.read_csv (f'{path.dirname(__file__)}/results/testing.csv') # Import quality and distance list :3
 q_df = qd_df[['Q1','Q2']]#,'Q3','Q4','Q5']]  # These are hard-coded for J = 5
 d_df = qd_df[['D1','D2']]#,'D3','D4','D5']] 
 
@@ -288,7 +289,8 @@ for p in tqdm(range(len(avals))):                    # for each value of paramA.
 colnameslist = colnamer()
 convdf = pd.DataFrame.from_records(convlist, columns = colnameslist) 
 #print(convdf)
-convdf.to_csv(r'/Users/nfn/Desktop/Ants/APRIL29-ks-v1.csv', index = False) # Fletcher's path :3
+#convdf.to_csv(r'/Users/nfn/Desktop/Ants/APRIL29-ks-v1.csv', index = False) # Fletcher's path :3
+convdf.to_csv(f'{path.dirname(__file__)}/results/testing2.csv', index = False)
 
 # sol.t is timesteps
 # sol.y is the solutions: one row for each trail, timesteps are cols
