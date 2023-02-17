@@ -10,7 +10,7 @@ import os
 # PARAMETERS
 
 #Parameters for the simulation
-runs   = 100            # How many times we run the simulation
+runs   = 1000 # How many times we run the simulation
 J      = 5               # Number of food sources (aka, number of trails to food sources)
 N      = 10000           # Total number of ants
 
@@ -67,9 +67,12 @@ def simulation():
     unweight_avg_D = np.zeros(runs)
     weight_quality_avg_D = np.zeros(runs)
     
+    #cov_list = []
+
     for w in range(runs):
         print(f"Run {w} of {runs} is running.\r", end="")
         Q = np.random.uniform(Qmin, Qmax, J)         #Choose each trail's quality from uniform dist
+        #Q = np.repeat((Qmax - Qmin)/2, J)            #Trail lengths always the same
         D = np.random.uniform(Dmin, Dmax, J)         #Choose each trail's distance from uniform dist
 
         betaB = p["n1"] * Q
@@ -77,19 +80,28 @@ def simulation():
 
         xs = odeint(dx_dt, x0, tspan, args=(Q,D,betaB,betaS)) #Solves the system. Columns: trail, Rows: time step
         final_time[w,:] = xs[-1,:]
-        weight_ants_avg_D[w] = sum((final_time[w,:] * D)/N)
+        weight_ants_avg_D[w] = sum((final_time[w,:] * D)/sum(final_time[w,:]))
         unweight_avg_D[w] = sum(D)/len(D)
         weight_quality_avg_D[w] = sum(Q*D) / sum(Q)
 
     return unweight_avg_D, weight_ants_avg_D, weight_quality_avg_D
 
 def manipulate_data(data):
-    d_u_a = data[1] - data[0]
-    d_u_q = data[2] - data[0]
-    #Ratio > 1 implies that the ants are less more focused
-    ratio = d_u_a/d_u_q
-    ratio = [rat for rat in ratio if abs(rat) < 10]
-    plt.hist(ratio)
+    plt.scatter(data[2]/data[0], data[1]/data[0])
+    """
+    delta_ants_to_unweight = data[1] - data[0]
+    delta_quality_to_unweight = data[2] - data[0]
+    delta_ants_to_quality = data[1] - data[2]
+    plt.scatter(-1 * delta_quality_to_unweight, -1*delta_ants_to_quality)
+    plt.xlabel("Avg Unweight Dist - Avg Dist Weight by Quality")
+    plt.ylabel("Avg Dist Weight by Quality - Avg Dist Weight by No. of Ants")
+    print(f"Average ants to unweighted: {sum(delta_ants_to_unweight)/len(delta_ants_to_unweight)}")
+    print(f"Average ants to quality: {sum(delta_ants_to_quality)/len(delta_ants_to_quality)}")
+    """
+    #plt.xticks(np.linspace(0, 2, 11))
+    #plt.yticks(np.linspace(0,2, 11))
+    print(f"Covariance: {np.cov(data[2]/data[0], data[1]/data[0])[0][1]}")
+    plt.title(f"Covariance: {round(np.cov(data[2]/data[0], data[1]/data[0])[0][1], 3)}")
     plt.show()
 
 def plot_fit(b, weight_avg):
@@ -124,6 +136,22 @@ def get_fit(weight_avg):
     print(f"beta: {b}")
     return b
 
+def get_covariance(data):
+    return np.cov(data[2]/data[0], data[1]/data[0])[0][1]
+
+def sweep_one_covariance(param, values):
+    """sweep_one_covariance takes in the name of a parmeter param string (ex: "alpha") and a list of
+       the values to run a sweep on.
+       Returns two arrays, the first containing the values and the second the resulting covariances
+    """
+    cov_list = []
+    for val in values:
+        print(f"Setting {param} to {val}")
+        p[param] = val
+        cov_list.append(get_covariance(simulation()))
+
+    return param, values, cov_list
+
 def plot_sweep_one(sweep_data):
     """ 
     plot_sweep_one takes in the output of sweep_one_fit and plots the values
@@ -135,7 +163,8 @@ def plot_sweep_one(sweep_data):
     ax.plot(sweep_data[1], sweep_data[2])
 
     ax.set_xlabel(sweep_data[0])
-    ax.set_ylabel("Beta")
+    ax.set_ylabel("Covariance of Normalized Weighted Averages")
+    plt.xscale("log")
     plt.show()
 
 
@@ -201,4 +230,5 @@ def plot_sweep_two(sweepdata):
 #plot_fit(get_fit(sim), sim)
 #plot_sweep_one(sweep_one_fit("gamma2", [5.8e-7, 2.96e-6, 5.8e-6, 1.2e-5, 5.8e-5]))
 #plot_sweep_two(sweep_two_fit("gamma2", "n1", [5.8e-7, 2.96e-6, 5.8e-6, 1.2e-5, 5.8e-5], [0.12, 0.6, 1.2, 2.4, 12]))
+#plot_sweep_one(sweep_one_covariance("n1", [20 / 100, 20 / 10, 20, 20*10, 20*100]))
 manipulate_data(simulation())
