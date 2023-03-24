@@ -15,20 +15,19 @@ p    = {
         "n2"     : 20              # Pheromone strength of trail (originally eta2)
 }
 
-N = 10000 #Number of ants
+N = 10 #Number of ants
 J = 2 # Number of trails
 
 #Controls Timespan and integration steps
 start = 0.0
-stop  = 3.0
+stop  = 30
 step = 0.005
 #tspan = np.arange(start, stop+step, step)
 tspan = [start, stop]
-teval = np.arange(start,stop+step,step)
-A = np.array([10, 20])
-B = np.array([0.1, 0.2])
+#teval = np.arange(start,stop+step,step)
+A = np.array([20.0,   10.0])
+B = np.array([0.1,     0.2])
 def dx_dt_gen(t, x, D, Q, A, B):
-    return system
     system = np.zeros(J)
     system = (A + B*x) * (N - sum(x)) - (p["s"]*D*x)/(p["K"]+ (p["gamma3"]/D)*p["n2"]*Q*x)
     return system
@@ -42,8 +41,8 @@ def integrate(D, Q):
     """
     Numercally integrates the system and returns an object with time and ants per trail.
     """
-    xs = solve_ivp(dx_dt, tspan, np.zeros(J), args = (D, Q), t_eval = teval)
-    xs = solve_ivp(dx_dt_gen, tspan, np.zeros(J), args = (D, Q), t_eval = teval)
+    #xs = solve_ivp(dx_dt, tspan, np.zeros(J), args = (D, Q), t_eval = teval)
+    xs = solve_ivp(dx_dt_gen, tspan, np.zeros(J), args = (D, Q, A, B))
     #xs = odeint(dx_dt, np.zeros(1), tspan, args=(D,Q))
     return xs
 

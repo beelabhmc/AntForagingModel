@@ -10,9 +10,9 @@ import os
 # PARAMETERS
 
 #Parameters for the simulation
-runs   = 1000 # How many times we run the simulation
+runs   = 5000 # How many times we run the simulation
 J      = 5               # Number of food sources (aka, number of trails to food sources)
-N      = 10000           # Total number of ants
+N      = 10           # Total number of ants
 
 #Parameters from the equation, accessed by name
 p    = {
@@ -29,7 +29,7 @@ p    = {
 Qmin = 0
 Qmax = 20
 Dmin = 0
-Dmax = 60
+Dmax = 40
 
 betaB  = np.zeros(J)     # How much each ant contributes to recruitment to a trail
 betaS  = np.zeros(J)     # Relationship btwn pheromone strength of a trail & its quality
@@ -59,7 +59,6 @@ def dx_dt(x,t,Q,D,betaB,betaS):
 
 # RUNS AND MODEL OUTPUT
 
-
 def simulation():
 
     final_time = np.zeros([runs, J])
@@ -68,7 +67,10 @@ def simulation():
     weight_quality_avg_D = np.zeros(runs)
     
     #cov_list = []
-
+    qd_is_popular = 0
+    closest_is_popular = 0
+    closest_is_qd = 0
+    neither_is_popular = 0
     for w in range(runs):
         print(f"Run {w} of {runs} is running.\r", end="")
         Q = np.random.uniform(Qmin, Qmax, J)         #Choose each trail's quality from uniform dist
@@ -80,11 +82,62 @@ def simulation():
 
         xs = odeint(dx_dt, x0, tspan, args=(Q,D,betaB,betaS)) #Solves the system. Columns: trail, Rows: time step
         final_time[w,:] = xs[-1,:]
-        weight_ants_avg_D[w] = sum((final_time[w,:] * D)/sum(final_time[w,:]))
+        weight_ants_avg_D[w] = sum(final_time[w,:] * D) / N
         unweight_avg_D[w] = sum(D)/len(D)
         weight_quality_avg_D[w] = sum(Q*D) / sum(Q)
 
-    return unweight_avg_D, weight_ants_avg_D, weight_quality_avg_D
+        #Determine which food source has the largest Q/D
+        quality_to_distance = Q/D
+        largest_q_to_d = np.argmax(quality_to_distance)
+        #Determine which food source is the closest
+        closest = np.argmin(D)
+        #Get the trail that has the most ants on it
+        most_popular = np.argmax(final_time[w,:])
+        if(largest_q_to_d == most_popular):
+            qd_is_popular += 1
+        if closest == most_popular:
+            closest_is_popular += 1
+        if closest == largest_q_to_d:
+            closest_is_qd += 1
+        if most_popular != largest_q_to_d and most_popular != closest:
+            neither_is_popular += 1
+            print(f"Q: {Q}")
+            print(f"D: {D}")
+            print(f"Q/D: {Q/D}")
+            plot_integrate(xs, Q, D)
+            break
+    print(f"Ants: {N}")
+    print(f"Went to best quality / distance proportion:  {qd_is_popular / runs}")
+    print(f"Went to closest proportion: {closest_is_popular/runs}")
+    print(f"Closest was highest quality / distance proportion: {closest_is_qd / runs}")
+    print(f"Ants went to either: {neither_is_popular / runs}")
+
+    return weight_ants_avg_D
+
+def plot_integrate(xs, Q, D, display=True, save=False):
+    """
+    Plots the results of numerical integration from integrate
+    """
+    fig, ax = plt.subplots(figsize=(6,4), tight_layout=True)
+    for i in range(len(xs[0])):
+        ax.plot(tspan, xs[:,i], label=f"Trail {i}")
+    #ax.plot(xs.t, xs.y[0] + xs.y[1], label="Total Ants on Trail")
+    #Find point at which we are using pretty much all the ants
+    all_ants = 0
+    for i in range(len(xs)):
+        if sum(xs[i]) > 0.95*N:
+            all_ants = tspan[i]
+            break
+    ax.axvline(x = all_ants, linestyle ="dashed")
+    ax.legend()
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Ants")
+    plt.ylim([0, N])
+    if save:
+        plt.savefig(f"Plots/Plot-{datetime.now().strftime('%d-%m-%Y-%H-%M-%S-%f')}.png")
+    if display:
+        plt.show()
+
 
 def manipulate_data(data):
     plt.scatter(data[2]/data[0], data[1]/data[0])
@@ -226,9 +279,10 @@ def plot_sweep_two(sweepdata):
     # Displaying the figure
     plt.show()
 
-#sim = simulation()
+N = 10**3
+simulation()
 #plot_fit(get_fit(sim), sim)
 #plot_sweep_one(sweep_one_fit("gamma2", [5.8e-7, 2.96e-6, 5.8e-6, 1.2e-5, 5.8e-5]))
 #plot_sweep_two(sweep_two_fit("gamma2", "n1", [5.8e-7, 2.96e-6, 5.8e-6, 1.2e-5, 5.8e-5], [0.12, 0.6, 1.2, 2.4, 12]))
-#plot_sweep_one(sweep_one_covariance("n1", [20 / 100, 20 / 10, 20, 20*10, 20*100]))
-manipulate_data(simulation())
+#plot_sweep_one(sweep_one_covariance("n2", [20 / 100, 20 / 10, 20, 20*10, 20*100]))
+#manipulate_data(simulation())
