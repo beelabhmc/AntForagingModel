@@ -112,6 +112,7 @@ def q_from_dX(d, X):
     D2 = (d/(N-X)) * (p["s"]/(X*p["n1"]*p["n2"]*p["gamma2"]*p["gamma3"]))
     D3 = (1/(2*X))*(p["K"]/(p["n2"]*p["gamma3"]) + (p["alpha"]*np.exp(-d*p["gamma1"]))/(p["n1"]*p["gamma2"]))
     return d*(np.sqrt(D1**2 + D2) - D3)
+
 D = np.array((10.0, 20.0))
 Q = np.array((30, 60) )
 print(f"Quality and Distance: {Q, D}")
