@@ -28,9 +28,11 @@ turtles-own [
 ;;;;;;;;;;;;;;;;;;;;;;;;
 
 globals
- [dist1
-  dist2
-  sign]
+ [source-1
+  source-2
+  source-3
+  source-4
+  ]
 
 
 to setup
@@ -52,6 +54,10 @@ to setup
   ;; red = not carrying food
   setup-patches
   reset-ticks
+  set source-1 []
+  set source-2 []
+  set source-3 []
+  set source-4 []
 end
 
 to setup-patches
@@ -96,6 +102,10 @@ end
 ;;; Go procedures ;;;
 ;;;;;;;;;;;;;;;;;;;;;
 
+to-report report-source-1
+ report source-1
+end
+
 to go  ;; forever button
   ask turtles
  [
@@ -131,6 +141,13 @@ to go  ;; forever button
     set chemical chemical1 + chemical2 + chemical3 + chemical4 + chemical5
     recolor-patch ]
   tick
+
+  ;counts
+  set source-1 lput count turtles with [status = "return-from-1" or status = "foraging-for-1"] source-1
+  set source-2 lput count turtles with [status = "return-from-2" or status = "foraging-for-2"] source-2
+  set source-3 lput count turtles with [status = "return-from-3" or status = "foraging-for-3"] source-3
+  set source-4 lput count turtles with [status = "return-from-4" or status = "foraging-for-4"] source-4
+
 end
 
 to return-to-nest  ;; turtle procedure
@@ -350,8 +367,8 @@ end
 GRAPHICS-WINDOW
 1181
 10
-1889
-719
+1894
+724
 -1
 -1
 5.0
