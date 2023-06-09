@@ -432,7 +432,7 @@ diffusion-rate
 diffusion-rate
 0
 50
-11.4
+15.0
 .2
 1
 NIL
@@ -447,7 +447,7 @@ evaporation-rate
 evaporation-rate
 0
 50
-8.15
+10.0
 .05
 1
 NIL
@@ -531,7 +531,7 @@ distance-1
 distance-1
 0
 1
-0.4
+0.5
 0.01
 1
 NIL
@@ -636,7 +636,7 @@ distance-3
 distance-3
 0
 1
-0.4
+0.35
 0.01
 1
 NIL
@@ -651,7 +651,7 @@ distance-4
 distance-4
 0
 1
-0.4
+0.25
 0.01
 1
 NIL
@@ -666,7 +666,7 @@ distance-5
 distance-5
 0
 1
-0.4
+1.0
 0.01
 1
 NIL
@@ -726,7 +726,7 @@ pheromone-5
 pheromone-5
 0
 5
-1.0
+0.0
 0.01
 1
 NIL
@@ -766,7 +766,7 @@ angle-between-nests
 angle-between-nests
 0
 360
-77.0
+90.0
 1
 1
 NIL
@@ -1722,6 +1722,73 @@ NetLogo 6.3.0
     </enumeratedValueSet>
     <enumeratedValueSet variable="random-dist-1">
       <value value="false"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="Config_9" repetitions="25" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="2000"/>
+    <metric>count turtles with [status = "return-from-1" or status = "foraging-for-1"]</metric>
+    <metric>count turtles with [status = "return-from-2" or status = "foraging-for-2"]</metric>
+    <metric>count turtles with [status = "return-from-3" or status = "foraging-for-3"]</metric>
+    <metric>count turtles with [status = "return-from-4" or status = "foraging-for-4"]</metric>
+    <enumeratedValueSet variable="population">
+      <value value="4000"/>
+      <value value="20000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-1">
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-3">
+      <value value="0.35"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-4">
+      <value value="0.25"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-2">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-5">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-1">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-3">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-4">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-2">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-5">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="evaporation-rate">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="diffusion-rate">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="base-pheromone">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="prob">
+      <value value="0.9"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="qprob">
+      <value value="0.05"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="fprob">
+      <value value="0.95"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nest-location">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="angle-between-nests">
+      <value value="90"/>
     </enumeratedValueSet>
   </experiment>
 </experiments>
