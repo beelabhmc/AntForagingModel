@@ -1,0 +1,76 @@
+\documentclass{article}
+\usepackage[english]{babel}
+\usepackage{amsthm}
+\usepackage{amsmath}
+
+\newtheorem{prop}{Proposition}
+\newtheorem{cor}{Corollary}
+\begin{document}
+
+\begin{prop}
+  As $N \rightarrow \infty$ and $t \rightarrow \infty$, the solution $\mathbf{X}(t)$ to the system with positive coefficients, and $B_i \ne B_j$ for all $i \ne j$
+  \begin{equation}
+    \frac{d \mathbf{X}_i}{dt} = (A_i + B_i\mathbf{X}_i)\left(N - \sum_{j=1}^J\mathbf{X}_j\right) - \frac{sd_i\mathbf{X}_i}{K+L_i\mathbf{X}_i}, i \in 1, 2, \dots, J
+    \label{theeq}
+  \end{equation}
+  and initial condition $\mathbf{X} = \mathbf{0}$ approaches $\mathbf{X}_b = N$ where $b$ is the component of $\mathbf{X}$ with the largest value of $B_i$ in (\ref{theeq}) and all other components of $\mathbf{X}$ approach 0. 
+\end{prop}
+\begin{proof}
+  We begin by making the substitution $\mathbf{X} = N\mathbf{P}$. This yields
+  \begin{equation}
+    \frac{d N\mathbf{P}_i}{dt} = (A_i + B_iN\mathbf{P}_i)\left(N - \sum_{j=1}^JN\mathbf{P}_j\right) - \frac{sd_iN\mathbf{P}_i}{K+L_iN\mathbf{P}_i}.
+    \label{peq1}
+  \end{equation}
+  Dividing both sides by $N$ yields
+  \begin{equation}
+    \frac{d \mathbf{P}_i}{dt} = (A_i + B_iN\mathbf{P}_i)\left(1 - \sum_{j=1}^J\mathbf{P}_j\right) - \frac{sd_i\mathbf{P}_i}{K+L_iN\mathbf{P}_i}.
+    \label{peq2}
+  \end{equation}
+  We next note that (\ref{peq2}) is asymptotically equivalent to
+  \begin{equation}
+    \frac{d \mathbf{P}_i}{dt} = (A_i + B_iN\mathbf{P}_i)\left(1 - \sum_{j=1}^J\mathbf{P}_j\right) 
+    \label{peq3}
+  \end{equation}
+  as $N \rightarrow \infty$ because
+  \begin{equation}
+    \lim_{N\rightarrow\infty} \frac{ (A_i + B_iN\mathbf{P}_i)\left(1 - \sum_{j=1}^J\mathbf{P}_j\right) - \frac{sd_i\mathbf{P}_i}{K+L_iN\mathbf{P}_i}.
+ }{  (A_i + B_iN\mathbf{P}_i)\left(1 - \sum_{j=1}^J\mathbf{P}_j\right) 
+} = 1
+    \label{asymptotic}
+  \end{equation}
+  Thus as $N \rightarrow \infty$, the solutions to $(\ref{peq2})$ approach those of $(\ref{peq3})$. Looking at $(\ref{peq3})$, we see that each component has the common factor $1 - \sum_{j=1}^J \mathbf{P}_j$. Therefore, for $1-\sum_{j=1}^J \mathbf{P}_j > 0$, the solution curve to $(\ref{peq3})$ is the same as that of
+  \begin{equation}
+    \frac{d \mathbf{P}_i}{dt} = (A_i + B_iN\mathbf{P}_i).
+    \label{peq4}
+  \end{equation}
+  When $1 - \sum_{j=1}^J \mathbf{P}_j = 0$, ($\ref{peq3}$) becomes $\frac{d\mathbf{P}_i}{dt} = 0$. Thus solutions to ($\ref{peq3}$) do not cross the hyperplane described by $1 - \sum_{j=1}^J \mathbf{P}_j= 0$. 
+  Using separation by parts, the solution to $(\ref{peq4})$ with initial condition $\mathbf{P} = \mathbf{0}$ is
+  \begin{equation}
+    \mathbf{P}_i(t) = \frac{A_i}{NB_i}\left(e^{NB_it}-1\right)
+    \label{psol}
+  \end{equation}
+  Denote the component of $\mathbf{P}_i(t)$ with the largest value of $B_i$ as component $b$. We next note that if $B_i > B_j$, the limit of the ratio between any two components $\mathbf{P}_i(t)$ and $\mathbf{P}_j(t)$ \textit{for any time $t$} as $N \rightarrow \infty$ is
+  \begin{equation}
+    \lim_{N \rightarrow \infty} \frac{ \frac{A_i}{NB_i}\left(e^{NB_it}-1\right)
+ } { \frac{A_j}{NB_j}\left(e^{NB_jt}-1\right)
+} = \infty
+    \label{ratio}
+  \end{equation}
+  Therefore, the ratio between $\mathbf{P}_b(t)$ and any other component of $\mathbf{P}(t)$ must approach $\infty$ as $N \rightarrow \infty$ at any time $t$, regardless of the value of $1 - \sum_{j=1}^J \mathbf{P}_j$. 
+
+
+As ($\ref{psol}$) is always increasing in every component with $t$, it must eventually cross the hyperplane described by $1 - \sum_{j=1}^J \mathbf{P}_j = 0$ at some point. This is the same point that solutions to ($\ref{peq3}$) with intial condition $\mathbf{P} = \mathbf{0}$ asymptotically approach. That is, solutions to ($\ref{peq3}$) must approach a constant value and the sum of the components to that solution will approach 1 as $t \rightarrow \infty$.
+
+As the sum of the components asymptotically approaches 1 as $t \rightarrow \infty$, all components besides $b$ must approach 0 and component $b$ must approach 1 as $N \rightarrow \infty$ and $t \rightarrow \infty$. If component $b$ did not approach 1, one more other components would approach a non-zero value and the ratio between component $b$ and any of those components would approach a constant value. From ($\ref{ratio}$), we know that this is impossible. Thus, component $b$ must approach 1 which implies that all other components much approach 0 because the sum of the components approaches 1.
+
+
+As ($\ref{peq2}$) is asymptotically equivalent to ($\ref{peq3}$) as $N \rightarrow \infty$, the same holds true for solutions to ($\ref{peq2}$) as $N \rightarrow \infty$. Using the relationship $\mathbf{X} = N \mathbf{P}$, we conclude that solutions to ($\ref{theeq}$) with initial condition $\mathbf{X} = \mathbf{0}$ must then approach $\mathbf{X}_b = N$ and all other components equal to 0 as $N \rightarrow \infty$ and $t \rightarrow \infty$.
+
+\end{proof}
+
+\begin{cor}
+  As $N \rightarrow \infty$ and $t \rightarrow \infty$, the solution to ($\ref{theeq}$) with initial condition $\mathbf{X} = \mathbf{0}$ where there exist two or more values of $B_i$ such that $B_i \ge B_j$ for all $i\ne j$ approaches $\mathbf{X}_i = \frac{A_i}{\sum_{j=1}^J A_j}N$
+
+\end{cor}
+
+\end{document}
