@@ -11,7 +11,7 @@ import os
 
 #Parameters for the simulation
 runs   = 5000 # How many times we run the simulation
-J      = 5               # Number of food sources (aka, number of trails to food sources)
+J      = 2               # Number of food sources (aka, number of trails to food sources)
 N      = 1000           # Total number of ants
 
 #Parameters from the equation, accessed by name
@@ -37,7 +37,7 @@ betaS  = np.zeros(J)     # Relationship btwn pheromone strength of a trail & its
 # TIME
 
 start = 0.0
-stop  = 50.0            
+stop  = 10.0            
 step  = 0.005
 tspan = np.arange(start, stop+step, step)
 
@@ -47,7 +47,7 @@ x0 = np.zeros(J)         # We start with no ants on any of the trails
 
 # SYSTEM OF EQUATIONS
 
-def dx_dt(x,t,Q,D,betaB,betaS):
+def dx_dt(x,t,Q,D,betaB,betaS, J):
         """
         Creates a list of J equations describing the number of ants
         on each of the J trails. (Eqn i corresponds to food source i)
@@ -60,7 +60,6 @@ def dx_dt(x,t,Q,D,betaB,betaS):
 # RUNS AND MODEL OUTPUT
 
 def simulation():
-
     final_time = np.zeros([runs, J])
     weight_ants_avg_D = np.zeros(runs) # Sum of (# of ants on a trail * its distance)/(total number of trails)
     unweight_avg_D = np.zeros(runs)
@@ -69,8 +68,13 @@ def simulation():
     #cov_list = []
     qd_is_popular = 0
     closest_is_popular = 0
-    closest_is_qd = 0
+    #closest_is_qd = 0
     neither_is_popular = 0
+
+    new_qd_is_popular = 0
+    new_closest_is_popular = 0
+    new_neither_is_popular = 0
+
     for w in range(runs):
         print(f"Run {w} of {runs} is running.\r", end="")
         Q = np.random.uniform(Qmin, Qmax, J)         #Choose each trail's quality from uniform dist
@@ -79,15 +83,19 @@ def simulation():
         while(np.argmax(Q/D) == np.argmin(D)):
             Q = np.random.uniform(Qmin, Qmax, J)
             D = np.random.uniform(Dmin, Dmax, J) 
-
+        
         betaB = p["n1"] * Q
         betaS = p["n2"] * Q
 
-        xs = odeint(dx_dt, x0, tspan, args=(Q,D,betaB,betaS)) #Solves the system. Columns: trail, Rows: time step
+        #x0 = np.zeros(J)
+        x0 = np.array([N/2 - 1, N/2 + 1])
+        xs = odeint(dx_dt, x0, tspan, args=(Q,D,betaB,betaS, J)) #Solves the system. Columns: trail, Rows: time step
+
+        final_time = np.zeros([runs, J])
         final_time[w,:] = xs[-1,:]
-        weight_ants_avg_D[w] = sum(final_time[w,:] * D) / N
-        unweight_avg_D[w] = sum(D)/len(D)
-        weight_quality_avg_D[w] = sum(Q*D) / sum(Q)
+        #weight_ants_avg_D[w] = sum(final_time[w,:] * D) / N
+        #unweight_avg_D[w] = sum(D)/len(D)
+        #weight_quality_avg_D[w] = sum(Q*D) / sum(Q)
 
         #Determine which food source has the largest Q/D
         largest_q_to_d = np.argmax(Q/D)
@@ -97,34 +105,71 @@ def simulation():
         most_popular = np.argmax(final_time[w,:])
         if(largest_q_to_d == most_popular):
             qd_is_popular += 1
-        if closest == most_popular:
+        elif closest == most_popular:
             closest_is_popular += 1
-        if closest == largest_q_to_d:
-            closest_is_qd += 1
-        if most_popular != largest_q_to_d and most_popular != closest:
+        else: 
             neither_is_popular += 1
         #plot_integrate(xs, Q, D)
-        print(Q/D)
-        print(D)
-    print(f"Food Sources: {J}")
+        """
+        #Choose distances and qualities such that they are within the same range as the old ones
+        new_D = np.random.uniform(min(D), max(D), J)
+        new_Q_D = np.random.uniform(min(Q/D), max(Q/D), J)
+        new_Q = np.append(Q, new_D*new_Q_D)
+        new_D = np.append(D, new_D)
+        
+        x0 = np.zeros(2*J)
+        betaB = p["n1"] * new_Q
+        betaS = p["n2"] * new_Q
+
+        xs = odeint(dx_dt, x0, tspan, args=(new_Q,new_D,betaB,betaS, 2*J)) #Solves the system. Columns: trail, Rows: time step
+        final_time = np.zeros([runs, 2*J])
+        final_time[w,:] = xs[-1,:]
+
+        if np.argmax(new_Q/new_D) != largest_q_to_d:
+            print("uh oh")
+        if np.argmin(new_D) != closest:
+            print("also uh oh")
+
+        most_popular = np.argmax(final_time[w,:])
+        
+        if(largest_q_to_d == most_popular):
+            new_qd_is_popular += 1
+        elif closest == most_popular:
+            new_closest_is_popular += 1
+        else:
+            new_neither_is_popular += 1
+        """
+
+
+    print(f"\nFood Sources: {J}")
     print(f"Went to best quality / distance proportion:  {qd_is_popular / runs}")
     print(f"Went to closest proportion: {closest_is_popular/runs}")
-    print(f"Closest was highest quality / distance proportion: {closest_is_qd / runs}")
-    print(f"Ants went to either: {neither_is_popular / runs}")
+    #print(f"Closest was highest quality / distance proportion: {closest_is_qd / runs}")
+    print(f"Ants went to neither: {neither_is_popular / runs}")
+
+    """
+    print(f"Food Sources: {2*J}")
+    print(f"Went to best quality / distance proportion:  {new_qd_is_popular / runs}")
+    print(f"Went to closest proportion: {new_closest_is_popular/runs}")
+    print(f"Ants went to neither: {new_neither_is_popular / runs}")
+    """
     return (qd_is_popular/runs, closest_is_popular/runs, neither_is_popular/runs)
 
 def plot_integrate(xs, Q, D, display=True, save=False):
     """
     Plots the results of numerical integration from integrate
     """
+    print(f"Qualities over Distances:\n {Q/D}")
+    print(f"Distances:\n {D}")
     fig, ax = plt.subplots(figsize=(6,4), tight_layout=True)
+    total_ants = np.zeros(len(xs[0]))
     for i in range(len(xs[0])):
         ax.plot(tspan, xs[:,i], label=f"Trail {i}")
-    #ax.plot(xs.t, xs.y[0] + xs.y[1], label="Total Ants on Trail")
+    ax.plot(tspan, np.sum(xs, axis=1), label="Total Ants on Trail")
     #Find point at which we are using pretty much all the ants
     all_ants = 0
     for i in range(len(xs)):
-        if sum(xs[i]) > 0.95*N:
+        if np.sum(xs, axis=1)[i] > 0.99*N:
             all_ants = tspan[i]
             break
     ax.axvline(x = all_ants, linestyle ="dashed")
@@ -276,12 +321,11 @@ def plot_sweep_two(sweepdata):
   
     # Displaying the figure
     plt.show()
-
 """
 runs = 1000
 results = []
 num_ants = []
-for i in range(2, 10):
+for i in range(2, 102, 10):
     print(f"{i} food sources \n")
     J = i
     x0 = np.zeros(J)
@@ -301,9 +345,7 @@ ax.set_ylabel("Proportion to Food Source")
 ax.legend()
 plt.show()
 """
-J = 10
-x0 = np.zeros(J)
-runs = 1
+runs = 1000
 simulation()
 
 #plot_fit(get_fit(sim), sim)
