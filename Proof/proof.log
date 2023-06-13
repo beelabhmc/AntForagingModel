@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.1) (preloaded format=pdflatex 2022.3.10)  12 JUN 2023 12:50
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.1) (preloaded format=pdflatex 2022.3.10)  13 JUN 2023 13:14
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -148,31 +148,29 @@ LaTeX Font Info:    ... okay on input line 8.
 {C:/Users/zbtra/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}] [2] (proof.a
 ux) ) 
 Here is how much of TeX's memory you used:
- 2145 strings out of 478582
+ 2144 strings out of 478582
  35214 string characters out of 2844344
- 351707 words of memory out of 3000000
- 20373 multiletter control sequences out of 15000+600000
+ 352707 words of memory out of 3000000
+ 20372 multiletter control sequences out of 15000+600000
  470986 words of font info for 34 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 54i,5n,62p,634b,174s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 54i,10n,62p,570b,182s stack positions out of 5000i,500n,10000p,200000b,80000s
 <C:/Users/zbtra/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/
 cm/cmbx10.pfb><C:/Users/zbtra/AppData/Local/Programs/MiKTeX/fonts/type1/public/
 amsfonts/cm/cmbx7.pfb><C:/Users/zbtra/AppData/Local/Programs/MiKTeX/fonts/type1
 /public/amsfonts/cm/cmex10.pfb><C:/Users/zbtra/AppData/Local/Programs/MiKTeX/fo
-nts/type1/public/amsfonts/cmextra/cmex7.pfb><C:/Users/zbtra/AppData/Local/Progr
-ams/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/zbtra/AppData/Lo
-cal/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi5.pfb><C:/Users/zbtra/Ap
-pData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/
-zbtra/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C
-:/Users/zbtra/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr5
-.pfb><C:/Users/zbtra/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/
-cm/cmr7.pfb><C:/Users/zbtra/AppData/Local/Programs/MiKTeX/fonts/type1/public/am
-sfonts/cm/cmsy10.pfb><C:/Users/zbtra/AppData/Local/Programs/MiKTeX/fonts/type1/
-public/amsfonts/cm/cmsy7.pfb><C:/Users/zbtra/AppData/Local/Programs/MiKTeX/font
-s/type1/public/amsfonts/cm/cmti10.pfb>
-Output written on proof.pdf (2 pages, 151038 bytes).
+nts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/zbtra/AppData/Local/Programs/
+MiKTeX/fonts/type1/public/amsfonts/cm/cmmi5.pfb><C:/Users/zbtra/AppData/Local/P
+rograms/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/zbtra/AppData
+/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/zbtra
+/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/User
+s/zbtra/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb
+><C:/Users/zbtra/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/c
+msy7.pfb><C:/Users/zbtra/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfo
+nts/cm/cmti10.pfb>
+Output written on proof.pdf (2 pages, 135603 bytes).
 PDF statistics:
- 74 PDF objects out of 1000 (max. 8388607)
+ 64 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
