@@ -365,13 +365,13 @@ end
 ; See Info tab for full copyright and license.
 @#$#@#$#@
 GRAPHICS-WINDOW
-1181
+1195
 10
 1894
-724
+710
 -1
 -1
-5.0
+4.901
 1
 10
 1
@@ -546,7 +546,7 @@ distance-2
 distance-2
 0
 1
-0.4
+0.5
 0.01
 1
 NIL
@@ -636,7 +636,7 @@ distance-3
 distance-3
 0
 1
-0.35
+0.5
 0.01
 1
 NIL
@@ -651,7 +651,7 @@ distance-4
 distance-4
 0
 1
-0.25
+0.5
 0.01
 1
 NIL
@@ -681,7 +681,7 @@ pheromone-2
 pheromone-2
 0
 5
-1.0
+2.0
 0.01
 1
 NIL
@@ -696,7 +696,7 @@ pheromone-3
 pheromone-3
 0
 5
-1.0
+3.0
 0.01
 1
 NIL
@@ -711,7 +711,7 @@ pheromone-4
 pheromone-4
 0
 5
-1.0
+4.0
 0.01
 1
 NIL
@@ -1925,10 +1925,10 @@ NetLogo 6.3.0
       <value value="90"/>
     </enumeratedValueSet>
   </experiment>
-  <experiment name="Config1_Baseline" repetitions="25" runMetricsEveryStep="true">
+  <experiment name="ControlDistance" repetitions="25" runMetricsEveryStep="true">
     <setup>setup</setup>
     <go>go</go>
-    <timeLimit steps="2500"/>
+    <timeLimit steps="3000"/>
     <metric>count turtles with [status = "return-from-1" or status = "foraging-for-1"]</metric>
     <metric>count turtles with [status = "return-from-2" or status = "foraging-for-2"]</metric>
     <metric>count turtles with [status = "return-from-3" or status = "foraging-for-3"]</metric>
@@ -1941,13 +1941,13 @@ NetLogo 6.3.0
       <value value="0.5"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="distance-2">
-      <value value="0.35"/>
+      <value value="0.5"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="distance-3">
-      <value value="0.25"/>
+      <value value="0.5"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="distance-4">
-      <value value="0.4"/>
+      <value value="0.5"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="distance-5">
       <value value="1"/>
@@ -1956,13 +1956,13 @@ NetLogo 6.3.0
       <value value="1"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="pheromone-2">
-      <value value="1"/>
+      <value value="2"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="pheromone-3">
-      <value value="1"/>
+      <value value="3"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="pheromone-4">
-      <value value="1"/>
+      <value value="4"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="pheromone-5">
       <value value="0"/>
@@ -2097,6 +2097,270 @@ NetLogo 6.3.0
     </enumeratedValueSet>
     <enumeratedValueSet variable="pheromone-2">
       <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-5">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="evaporation-rate">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="diffusion-rate">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="base-pheromone">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="prob">
+      <value value="0.9"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="qprob">
+      <value value="0.05"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="fprob">
+      <value value="0.95"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nest-location">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="angle-between-nests">
+      <value value="90"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="ControlD0.50Q2.00" repetitions="25" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="1000"/>
+    <metric>count turtles with [status = "return-from-1" or status = "foraging-for-1"]</metric>
+    <metric>count turtles with [status = "return-from-2" or status = "foraging-for-2"]</metric>
+    <metric>count turtles with [status = "return-from-3" or status = "foraging-for-3"]</metric>
+    <metric>count turtles with [status = "return-from-4" or status = "foraging-for-4"]</metric>
+    <enumeratedValueSet variable="population">
+      <value value="1000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-1">
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-2">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-3">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-4">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-5">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-1">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-2">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-3">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-4">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-5">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="evaporation-rate">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="diffusion-rate">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="base-pheromone">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="prob">
+      <value value="0.9"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="qprob">
+      <value value="0.05"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="fprob">
+      <value value="0.95"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nest-location">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="angle-between-nests">
+      <value value="90"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="ControlD0.40Q1.20" repetitions="25" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="1000"/>
+    <metric>count turtles with [status = "return-from-1" or status = "foraging-for-1"]</metric>
+    <metric>count turtles with [status = "return-from-2" or status = "foraging-for-2"]</metric>
+    <metric>count turtles with [status = "return-from-3" or status = "foraging-for-3"]</metric>
+    <metric>count turtles with [status = "return-from-4" or status = "foraging-for-4"]</metric>
+    <enumeratedValueSet variable="population">
+      <value value="1000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-1">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-2">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-3">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-4">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-5">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-1">
+      <value value="1.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-2">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-3">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-4">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-5">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="evaporation-rate">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="diffusion-rate">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="base-pheromone">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="prob">
+      <value value="0.9"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="qprob">
+      <value value="0.05"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="fprob">
+      <value value="0.95"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nest-location">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="angle-between-nests">
+      <value value="90"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="ControlD0.35Q0.70" repetitions="25" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="1000"/>
+    <metric>count turtles with [status = "return-from-1" or status = "foraging-for-1"]</metric>
+    <metric>count turtles with [status = "return-from-2" or status = "foraging-for-2"]</metric>
+    <metric>count turtles with [status = "return-from-3" or status = "foraging-for-3"]</metric>
+    <metric>count turtles with [status = "return-from-4" or status = "foraging-for-4"]</metric>
+    <enumeratedValueSet variable="population">
+      <value value="1000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-1">
+      <value value="0.35"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-2">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-3">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-4">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-5">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-1">
+      <value value="0.7"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-2">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-3">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-4">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-5">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="evaporation-rate">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="diffusion-rate">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="base-pheromone">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="prob">
+      <value value="0.9"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="qprob">
+      <value value="0.05"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="fprob">
+      <value value="0.95"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nest-location">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="angle-between-nests">
+      <value value="90"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="ControlD0.25Q0.25" repetitions="25" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="1000"/>
+    <metric>count turtles with [status = "return-from-1" or status = "foraging-for-1"]</metric>
+    <metric>count turtles with [status = "return-from-2" or status = "foraging-for-2"]</metric>
+    <metric>count turtles with [status = "return-from-3" or status = "foraging-for-3"]</metric>
+    <metric>count turtles with [status = "return-from-4" or status = "foraging-for-4"]</metric>
+    <enumeratedValueSet variable="population">
+      <value value="1000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-1">
+      <value value="0.25"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-2">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-3">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-4">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-5">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-1">
+      <value value="0.25"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-2">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-3">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-4">
+      <value value="0"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="pheromone-5">
       <value value="0"/>
