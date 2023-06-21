@@ -143,10 +143,10 @@ to go  ;; forever button
   tick
 
   ;counts
-  set source-1 lput count turtles with [status = "return-from-1" or status = "foraging-for-1"] source-1
-  set source-2 lput count turtles with [status = "return-from-2" or status = "foraging-for-2"] source-2
-  set source-3 lput count turtles with [status = "return-from-3" or status = "foraging-for-3"] source-3
-  set source-4 lput count turtles with [status = "return-from-4" or status = "foraging-for-4"] source-4
+  ;set source-1 lput count turtles with [status = "return-from-1" or status = "foraging-for-1"] source-1
+  ;set source-2 lput count turtles with [status = "return-from-2" or status = "foraging-for-2"] source-2
+  ;set source-3 lput count turtles with [status = "return-from-3" or status = "foraging-for-3"] source-3
+  ;set source-4 lput count turtles with [status = "return-from-4" or status = "foraging-for-4"] source-4
 
 end
 
@@ -172,7 +172,8 @@ to return-to-nest  ;; turtle procedure
     ;; two sliders for pheromone-ratio and low-quality-pheromone
     ;; pheromone-ratio represents how many times larger the high-quality pheromone is than the low-quality pheromone
     ;; low-quality-pheromone tells us how much pheromone the ants will leave after visiting the low-quality food source
-    [if prevfood = 1 [set chemical1 chemical1 + base-pheromone * pheromone-1]    ; this drops chemical proportionately with the quality of the food that the turtle previously picked up (now logged in prevfood)
+  [
+     if prevfood = 1 [set chemical1 chemical1 + base-pheromone * pheromone-1]    ; this drops chemical proportionately with the quality of the food that the turtle previously picked up (now logged in prevfood)
      if prevfood = 2 [set chemical2 chemical2 + base-pheromone * pheromone-2]
      if prevfood = 3 [set chemical3 chemical3 + base-pheromone * pheromone-3]
      if prevfood = 4 [set chemical4 chemical4 + base-pheromone * pheromone-4]
@@ -188,6 +189,7 @@ to return-to-nest-no-food  ;; turtle procedure
      set status "at nest"   ;this resets the status of the turtle for it to go out again and forage (this will probably want to be changed later to have memory of the previous food source)
      setxy 0 nest-location
      right random 360
+
   ]
    [uphill-nest-scent]
     end
@@ -195,6 +197,7 @@ to return-to-nest-no-food  ;; turtle procedure
 
 
 to look-for-food  ;; turtle procedure
+
   if food-source-number = 1
     [set color blue                             ; change the color of the turtle
      set status "return-from-1"               ; set status to be returning from food-source-number 1
@@ -256,7 +259,8 @@ to look-for-food  ;; turtle procedure
               set binStatus 5
             ]
           )
-          move-around-rank-edge]
+          move-around-rank-edge
+  ]
   [
     ifelse (random-float 1 < prob)[
       ifelse nest? = true
@@ -295,6 +299,32 @@ to-report nest-scent-at-angle [angle]
   let p patch-right-and-ahead angle 1
   if p = nobody [ report 0 ]
   report [nest-scent] of p
+end
+
+to move-around-weber  ; instead of turning in 45 degree increments, magnitude of turn is based on the difference divided by the average of the two patches at 45 degree angles to the ant
+  let patch_set (patch-set patch-right-and-ahead 45 1 patch-right-and-ahead -45 1)
+  let patch_list sort-on [chemical] patch_set
+
+  if length patch_list = 0 [rt 180
+    stop]
+
+  if length patch_list = 1 ;If there is only one patch in the list, choose it
+  [let patch_i item 0 patch_list
+     let ci ([chemical] of patch_i)
+      ifelse ci > 0[
+      if patch-right-and-ahead 45 1 = patch_i [rt A1 * ((ci + random-normal 0 e1) / ci) + random-normal 0 e2]     ;right patch has more pheromone
+      if patch-right-and-ahead -45 1 = patch_i [lt A1 * ((ci + random-normal 0 e1) / ci) + random-normal 0 e2]]   ;left patch has more pheromone
+    [wiggle]]
+
+  if length patch_list = 2                              ;if there are two items in the patch list
+    [let patch_i item 1 patch_list
+     let patch_j item 0 patch_list
+     let ci ([chemical] of patch_i)
+     let cj ([chemical] of patch_j)
+      ifelse ci + cj > 0
+     [if patch-right-and-ahead 45 1 = patch_i [rt A1 * (ci - cj + random-normal 0 e1)/(ci + cj) + random-normal 0 e2]        ;if right patch has more pheromone
+      if patch-right-and-ahead -45 1 = patch_i [lt A1 * (ci - cj + random-normal 0 e1)/(ci + cj) + random-normal 0 e2]]       ; if left patch has more pheromone
+      [wiggle]]
 end
 
 to move-around-rank-edge
@@ -417,7 +447,7 @@ population
 population
 0
 20000
-20000.0
+2770.0
 10
 1
 NIL
@@ -432,7 +462,7 @@ diffusion-rate
 diffusion-rate
 0
 50
-15.0
+8.8
 .2
 1
 NIL
@@ -462,7 +492,7 @@ base-pheromone
 base-pheromone
 0
 50
-50.0
+10.788
 0.001
 1
 NIL
@@ -476,8 +506,8 @@ SLIDER
 pheromone-1
 pheromone-1
 0
-5
-1.0
+2
+2.0
 .01
 1
 NIL
@@ -546,7 +576,7 @@ distance-2
 distance-2
 0
 1
-0.5
+1.0
 0.01
 1
 NIL
@@ -636,7 +666,7 @@ distance-3
 distance-3
 0
 1
-0.5
+0.35
 0.01
 1
 NIL
@@ -651,7 +681,7 @@ distance-4
 distance-4
 0
 1
-0.5
+1.0
 0.01
 1
 NIL
@@ -681,7 +711,7 @@ pheromone-2
 pheromone-2
 0
 5
-2.0
+0.0
 0.01
 1
 NIL
@@ -696,7 +726,7 @@ pheromone-3
 pheromone-3
 0
 5
-3.0
+0.7
 0.01
 1
 NIL
@@ -711,7 +741,7 @@ pheromone-4
 pheromone-4
 0
 5
-4.0
+0.0
 0.01
 1
 NIL
@@ -767,6 +797,51 @@ angle-between-nests
 0
 360
 90.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+710
+109
+882
+142
+e1
+e1
+0
+2500
+100.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+712
+153
+884
+186
+e2
+e2
+0
+100
+15.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+710
+196
+882
+229
+A1
+A1
+0
+100
+30.0
 1
 1
 NIL
@@ -2507,6 +2582,274 @@ NetLogo 6.3.0
     </enumeratedValueSet>
     <enumeratedValueSet variable="base-pheromone">
       <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="prob">
+      <value value="0.9"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="qprob">
+      <value value="0.05"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="fprob">
+      <value value="0.95"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nest-location">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="angle-between-nests">
+      <value value="90"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="Config1B" repetitions="25" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="2500"/>
+    <metric>count turtles with [status = "return-from-1" or status = "foraging-for-1"]</metric>
+    <metric>count turtles with [status = "return-from-2" or status = "foraging-for-2"]</metric>
+    <metric>count turtles with [status = "return-from-3" or status = "foraging-for-3"]</metric>
+    <metric>count turtles with [status = "return-from-4" or status = "foraging-for-4"]</metric>
+    <enumeratedValueSet variable="population">
+      <value value="4000"/>
+      <value value="20000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-1">
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-2">
+      <value value="0.35"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-3">
+      <value value="0.25"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-4">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-5">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-1">
+      <value value="1.25"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-2">
+      <value value="0.7"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-3">
+      <value value="0.25"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-4">
+      <value value="1.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-5">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="evaporation-rate">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="diffusion-rate">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="base-pheromone">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="prob">
+      <value value="0.9"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="qprob">
+      <value value="0.05"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="fprob">
+      <value value="0.95"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nest-location">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="angle-between-nests">
+      <value value="90"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="Config2B" repetitions="25" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="2500"/>
+    <metric>count turtles with [status = "return-from-1" or status = "foraging-for-1"]</metric>
+    <metric>count turtles with [status = "return-from-2" or status = "foraging-for-2"]</metric>
+    <metric>count turtles with [status = "return-from-3" or status = "foraging-for-3"]</metric>
+    <metric>count turtles with [status = "return-from-4" or status = "foraging-for-4"]</metric>
+    <enumeratedValueSet variable="population">
+      <value value="4000"/>
+      <value value="20000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-1">
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-4">
+      <value value="0.35"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-2">
+      <value value="0.25"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-3">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-5">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-1">
+      <value value="1.25"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-4">
+      <value value="0.7"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-2">
+      <value value="0.25"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-3">
+      <value value="1.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-5">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="evaporation-rate">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="diffusion-rate">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="base-pheromone">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="prob">
+      <value value="0.9"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="qprob">
+      <value value="0.05"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="fprob">
+      <value value="0.95"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nest-location">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="angle-between-nests">
+      <value value="90"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="Config3B" repetitions="25" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="2500"/>
+    <metric>count turtles with [status = "return-from-1" or status = "foraging-for-1"]</metric>
+    <metric>count turtles with [status = "return-from-2" or status = "foraging-for-2"]</metric>
+    <metric>count turtles with [status = "return-from-3" or status = "foraging-for-3"]</metric>
+    <metric>count turtles with [status = "return-from-4" or status = "foraging-for-4"]</metric>
+    <enumeratedValueSet variable="population">
+      <value value="4000"/>
+      <value value="20000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-1">
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-3">
+      <value value="0.35"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-4">
+      <value value="0.25"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-2">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-5">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-1">
+      <value value="1.25"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-3">
+      <value value="0.7"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-4">
+      <value value="0.25"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-2">
+      <value value="1.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-5">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="evaporation-rate">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="diffusion-rate">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="base-pheromone">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="prob">
+      <value value="0.9"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="qprob">
+      <value value="0.05"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="fprob">
+      <value value="0.95"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nest-location">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="angle-between-nests">
+      <value value="90"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="Config1Pheromone" repetitions="25" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="2500"/>
+    <metric>count turtles with [status = "return-from-1" or status = "foraging-for-1"]</metric>
+    <metric>count turtles with [status = "return-from-2" or status = "foraging-for-2"]</metric>
+    <metric>count turtles with [status = "return-from-3" or status = "foraging-for-3"]</metric>
+    <metric>count turtles with [status = "return-from-4" or status = "foraging-for-4"]</metric>
+    <enumeratedValueSet variable="population">
+      <value value="4000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-1">
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-2">
+      <value value="0.35"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-3">
+      <value value="0.25"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-4">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-5">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-1">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-2">
+      <value value="0.7"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-3">
+      <value value="0.25"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-4">
+      <value value="1.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-5">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="evaporation-rate">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="diffusion-rate">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="base-pheromone">
+      <value value="50"/>
+      <value value="250"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="prob">
       <value value="0.9"/>
