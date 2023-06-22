@@ -46,10 +46,7 @@ to setup
     ;set prob 0.9
     set color red
     setxy 0 nest-location
-
-    right random 360
-
-
+    set heading (random 4) * 90
   ]
   ;; red = not carrying food
   setup-patches
@@ -125,7 +122,8 @@ to go  ;; forever button
       ]
     ]
     wiggle
-    fd 1 ]
+    fd 1
+  ]
   diffuse chemical1 (diffusion-rate / 100)
   diffuse chemical2 (diffusion-rate / 100)
   diffuse chemical3 (diffusion-rate / 100)
@@ -158,9 +156,8 @@ to return-to-nest  ;; turtle procedure
       ;orient the ant in the direction of its previous food source
       ifelse (random-float 1 < fprob)[
         set heading angle-between-nests * (prevfood - 1)
-
       ][
-       right random 360
+        set heading (random 4) * 90
       ]
 
       set prevfood 0         ;this resets the quality of the food the turtle is carrying, since it has deposited its food
@@ -188,9 +185,10 @@ to return-to-nest-no-food  ;; turtle procedure
      set binStatus 0
      set status "at nest"   ;this resets the status of the turtle for it to go out again and forage (this will probably want to be changed later to have memory of the previous food source)
      setxy 0 nest-location
-     right random 360
 
+     set heading (random 4) * 90
   ]
+
    [uphill-nest-scent]
     end
 
@@ -447,7 +445,7 @@ population
 population
 0
 20000
-2770.0
+4000.0
 10
 1
 NIL
@@ -462,7 +460,7 @@ diffusion-rate
 diffusion-rate
 0
 50
-8.8
+10.0
 .2
 1
 NIL
@@ -492,7 +490,7 @@ base-pheromone
 base-pheromone
 0
 50
-10.788
+50.0
 0.001
 1
 NIL
@@ -576,7 +574,7 @@ distance-2
 distance-2
 0
 1
-1.0
+0.4
 0.01
 1
 NIL
@@ -681,7 +679,7 @@ distance-4
 distance-4
 0
 1
-1.0
+0.25
 0.01
 1
 NIL
@@ -711,7 +709,7 @@ pheromone-2
 pheromone-2
 0
 5
-0.0
+1.2
 0.01
 1
 NIL
@@ -741,7 +739,7 @@ pheromone-4
 pheromone-4
 0
 5
-0.0
+0.25
 0.01
 1
 NIL
