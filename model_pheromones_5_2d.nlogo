@@ -66,7 +66,7 @@ end
 
 to setup-nest  ;; patch procedure
   ;; set nest? variable to true inside the nest, false elsewhere
-  set nest? (distancexy 0 nest-location) < 4
+  set nest? (distancexy 0 nest-location) < 2
   ;; spread a nest-scent over the whole world -- stronger near the nest
   set nest-scent 200 - distancexy 0 nest-location
 end
@@ -165,6 +165,7 @@ to return-to-nest  ;; turtle procedure
       set status "at nest"   ;this resets the status of the turtle for it to go out again and forage (this will probably want to be changed later to have memory of the previous food source)
 
       setxy 0 nest-location
+
     ]
     ;; two sliders for pheromone-ratio and low-quality-pheromone
     ;; pheromone-ratio represents how many times larger the high-quality pheromone is than the low-quality pheromone
@@ -187,6 +188,7 @@ to return-to-nest-no-food  ;; turtle procedure
      setxy 0 nest-location
 
      set heading (random 4) * 90
+
 
   ]
 
@@ -286,6 +288,7 @@ to uphill-nest-scent  ;; turtle procedure
   [ ifelse scent-right > scent-left
     [ rt 45 ]
     [ lt 45 ] ]
+  ;set heading 180 + atan xcor ycor
 end
 
 to wiggle  ;; turtle procedure
@@ -298,32 +301,6 @@ to-report nest-scent-at-angle [angle]
   let p patch-right-and-ahead angle 1
   if p = nobody [ report 0 ]
   report [nest-scent] of p
-end
-
-to move-around-weber  ; instead of turning in 45 degree increments, magnitude of turn is based on the difference divided by the average of the two patches at 45 degree angles to the ant
-  let patch_set (patch-set patch-right-and-ahead 45 1 patch-right-and-ahead -45 1)
-  let patch_list sort-on [chemical] patch_set
-
-  if length patch_list = 0 [rt 180
-    stop]
-
-  if length patch_list = 1 ;If there is only one patch in the list, choose it
-  [let patch_i item 0 patch_list
-     let ci ([chemical] of patch_i)
-      ifelse ci > 0[
-      if patch-right-and-ahead 45 1 = patch_i [rt A1 * ((ci + random-normal 0 e1) / ci) + random-normal 0 e2]     ;right patch has more pheromone
-      if patch-right-and-ahead -45 1 = patch_i [lt A1 * ((ci + random-normal 0 e1) / ci) + random-normal 0 e2]]   ;left patch has more pheromone
-    [wiggle]]
-
-  if length patch_list = 2                              ;if there are two items in the patch list
-    [let patch_i item 1 patch_list
-     let patch_j item 0 patch_list
-     let ci ([chemical] of patch_i)
-     let cj ([chemical] of patch_j)
-      ifelse ci + cj > 0
-     [if patch-right-and-ahead 45 1 = patch_i [rt A1 * (ci - cj + random-normal 0 e1)/(ci + cj) + random-normal 0 e2]        ;if right patch has more pheromone
-      if patch-right-and-ahead -45 1 = patch_i [lt A1 * (ci - cj + random-normal 0 e1)/(ci + cj) + random-normal 0 e2]]       ; if left patch has more pheromone
-      [wiggle]]
 end
 
 to move-around-rank-edge
@@ -394,13 +371,13 @@ end
 ; See Info tab for full copyright and license.
 @#$#@#$#@
 GRAPHICS-WINDOW
-1195
-10
-1894
-710
+905
+46
+1588
+730
 -1
 -1
-4.901
+4.79
 1
 10
 1
@@ -438,40 +415,40 @@ NIL
 1
 
 SLIDER
-20
-75
-273
-108
+21
+80
+274
+113
 population
 population
 0
 20000
-4000.0
+20000.0
 10
 1
 NIL
 HORIZONTAL
 
 SLIDER
-20
-114
-274
-147
+22
+127
+276
+160
 diffusion-rate
 diffusion-rate
 0
 50
-10.0
+15.0
 .2
 1
 NIL
 HORIZONTAL
 
 SLIDER
-19
-151
-273
-184
+22
+169
+276
+202
 evaporation-rate
 evaporation-rate
 0
@@ -483,10 +460,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-19
-192
-275
-225
+20
+215
+276
+248
 base-pheromone
 base-pheromone
 0
@@ -498,10 +475,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-482
-28
-654
-61
+473
+80
+645
+113
 pheromone-1
 pheromone-1
 0
@@ -553,9 +530,9 @@ PENS
 
 SLIDER
 284
-27
+80
 457
-60
+113
 distance-1
 distance-1
 0
@@ -568,9 +545,9 @@ HORIZONTAL
 
 SLIDER
 286
-74
+127
 459
-107
+160
 distance-2
 distance-2
 0
@@ -582,10 +559,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-992
-132
-1164
-165
+685
+159
+857
+192
 qprob
 qprob
 0
@@ -597,55 +574,45 @@ NIL
 HORIZONTAL
 
 TEXTBOX
-99
-278
-282
-348
-pheromone-ratio represents how many times more pheromone ants produce for the high quality food source
-11
-0.0
-1
-
-TEXTBOX
-994
-169
-1167
-198
+687
+196
+860
+225
 probability of an ant choosing a cell other than the highest chemical cell
 11
 0.0
 1
 
 SLIDER
-991
-18
-1163
-51
+685
+81
+857
+114
 prob
 prob
 0
 1
-0.95
+0.9
 0.01
 1
 NIL
 HORIZONTAL
 
 TEXTBOX
-998
-55
-1167
-97
+692
+118
+861
+160
 probability that an unloaded ant does not returns to nest (yellow)
 11
 0.0
 1
 
 SLIDER
-277
-278
-449
-311
+1703
+193
+1875
+226
 nest-location
 nest-location
 -70
@@ -658,9 +625,9 @@ HORIZONTAL
 
 SLIDER
 286
-120
+173
 458
-153
+206
 distance-3
 distance-3
 0
@@ -673,9 +640,9 @@ HORIZONTAL
 
 SLIDER
 288
-163
+216
 460
-196
+249
 distance-4
 distance-4
 0
@@ -687,25 +654,25 @@ NIL
 HORIZONTAL
 
 SLIDER
-288
-212
-460
-245
+289
+263
+461
+296
 distance-5
 distance-5
 0
 1
-1.0
+2.0
 0.01
 1
 NIL
 HORIZONTAL
 
 SLIDER
-478
-77
-650
-110
+475
+129
+647
+162
 pheromone-2
 pheromone-2
 0
@@ -717,10 +684,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-477
-119
-649
-152
+474
+171
+646
+204
 pheromone-3
 pheromone-3
 0
@@ -732,10 +699,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-476
-165
-648
-198
+473
+217
+645
+250
 pheromone-4
 pheromone-4
 0
@@ -747,10 +714,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-477
-213
-649
-246
+474
+260
+646
+293
 pheromone-5
 pheromone-5
 0
@@ -762,10 +729,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1001
-244
-1173
-277
+683
+236
+855
+269
 fprob
 fprob
 0
@@ -777,20 +744,20 @@ NIL
 HORIZONTAL
 
 TEXTBOX
-991
-289
-1184
-345
+683
+281
+876
+337
 probability of ant being oriented towards the food source it came from upon returning to the nest\n
 11
 0.0
 1
 
 SLIDER
-995
-348
-1167
-381
+682
+350
+854
+383
 angle-between-nests
 angle-between-nests
 0
@@ -801,50 +768,35 @@ angle-between-nests
 NIL
 HORIZONTAL
 
-SLIDER
-710
-109
-882
-142
-e1
-e1
-0
-2500
-100.0
+TEXTBOX
+342
+48
+418
+66
+Distances
+14
+0.0
 1
-1
-NIL
-HORIZONTAL
 
-SLIDER
-712
-153
-884
-186
-e2
-e2
-0
-100
-15.0
+TEXTBOX
+525
+48
+578
+66
+Qualities
+14
+0.0
 1
-1
-NIL
-HORIZONTAL
 
-SLIDER
-710
-196
-882
-229
-A1
-A1
-0
-100
-30.0
+TEXTBOX
+737
+50
+887
+68
+Probabilities
+14
+0.0
 1
-1
-NIL
-HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -3119,6 +3071,73 @@ NetLogo 6.3.0
     </enumeratedValueSet>
     <enumeratedValueSet variable="prob">
       <value value="0.9"/>
+      <value value="0.95"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="qprob">
+      <value value="0.05"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="fprob">
+      <value value="0.95"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nest-location">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="angle-between-nests">
+      <value value="90"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="Config1DifP" repetitions="25" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="2500"/>
+    <metric>count turtles with [status = "return-from-1" or status = "foraging-for-1"]</metric>
+    <metric>count turtles with [status = "return-from-2" or status = "foraging-for-2"]</metric>
+    <metric>count turtles with [status = "return-from-3" or status = "foraging-for-3"]</metric>
+    <metric>count turtles with [status = "return-from-4" or status = "foraging-for-4"]</metric>
+    <enumeratedValueSet variable="population">
+      <value value="4000"/>
+      <value value="20000"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-1">
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-2">
+      <value value="0.35"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-3">
+      <value value="0.25"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-4">
+      <value value="0.4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distance-5">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-1">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-2">
+      <value value="0.7"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-3">
+      <value value="0.25"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-4">
+      <value value="1.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="pheromone-5">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="evaporation-rate">
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="diffusion-rate">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="base-pheromone">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="prob">
       <value value="0.95"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="qprob">
